@@ -6,7 +6,7 @@ export const calculateBMI = (weightKg?: number, heightCm?: number) => {
 }
 
 // A deliberately simple adult baseline. It remains an estimate and can always be overridden.
-export const estimateRestingCalories = (weightKg?: number) => weightKg ? Math.round(weightKg * 22) : undefined
+export const estimateRestingCalories = (weightKg?: number) => weightKg ? Math.round(weightKg * 22 * 10) / 10 : undefined
 
 export const activityLevels: Array<{ id: ActivityLevel; name: string; description: string; factor: number }> = [
   { id: 'sedentary', name: '静坐办公', description: '办公桌为主，少量走动', factor: .2 },
@@ -17,7 +17,7 @@ export const activityLevels: Array<{ id: ActivityLevel; name: string; descriptio
 
 export const estimateDailyActivityCalories = (restingCalories?: number, level?: ActivityLevel) => {
   const factor = activityLevels.find(item => item.id === level)?.factor
-  return restingCalories && factor ? Math.round(restingCalories * factor) : undefined
+  return restingCalories && factor ? Math.round(restingCalories * factor * 10) / 10 : undefined
 }
 
 export const getFoodCalories = (record?: Partial<DailyRecord>) => record?.foodEntries != null
