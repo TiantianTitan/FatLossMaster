@@ -1,17 +1,17 @@
 import { addDays, addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, isSameMonth, parseISO, startOfMonth, startOfWeek } from 'date-fns'
 import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import type { DailyRecord } from '../../types/record'
-import { fullDisplayDate } from '../../lib/date'
+import type { BodyProfile, DailyRecord } from '../../types/record'
+import { fullDisplayDate, todayKey } from '../../lib/date'
 import { useDailyRecord } from '../../hooks/useDailyRecord'
 import { RecordForm } from '../../components/forms/RecordForm'
 import { Toast } from '../../components/ui/Toast'
 import { deleteRecord } from '../../db/records'
 
 const weekdays = ['一','二','三','四','五','六','日']
-export function RecordsPage({ initialDate, records, onRecordsChange }: { initialDate: string; records: DailyRecord[]; onRecordsChange: () => void }) {
+export function RecordsPage({ initialDate, records, bodyDefaults, onRecordsChange }: { initialDate: string; records: DailyRecord[]; bodyDefaults: BodyProfile; onRecordsChange: () => void }) {
   const [selected, setSelected] = useState(initialDate), [month, setMonth] = useState(startOfMonth(parseISO(initialDate)))
-  const { record, update, ready, saved } = useDailyRecord(selected, onRecordsChange)
+  const { record, update, ready, saved } = useDailyRecord(selected, onRecordsChange, selected===todayKey()?bodyDefaults:undefined)
   const marked = useMemo(() => new Set(records.map(r => r.date)), [records])
   const days = eachDayOfInterval({ start: startOfWeek(startOfMonth(month), { weekStartsOn: 1 }), end: endOfWeek(endOfMonth(month), { weekStartsOn: 1 }) })
   const selectDate = (date: Date) => { setSelected(format(date, 'yyyy-MM-dd')); setMonth(startOfMonth(date)) }

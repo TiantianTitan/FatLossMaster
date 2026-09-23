@@ -2,6 +2,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { ActivityEntry, FoodEntry } from '../../types/record'
 import { Modal } from '../ui/Modal'
+import { parseDecimal } from '../../lib/numbers'
 
 type Kind = 'food' | 'activity'
 type Entry = FoodEntry | ActivityEntry
@@ -34,15 +35,15 @@ function EntryEditor({ kind, entry, onSave, onSaveAndContinue, onClose }: { kind
   const [protein, setProtein] = useState(entry && 'proteinGrams' in entry ? entry.proteinGrams?.toString() ?? '' : '')
   const isFood = kind === 'food'
   const buildEntry = () => {
-    const value = Number(calories); if (!value || value < 0) return
+    const value = parseDecimal(calories); if (!value || value < 0) return
     const base = { id: entry?.id ?? crypto.randomUUID(), name: name.trim() || (isFood ? '快速记录' : '运动记录'), calories: value }
-    return isFood ? { ...base, proteinGrams: protein === '' ? undefined : Number(protein) } : base
+    return isFood ? { ...base, proteinGrams: protein === '' ? undefined : parseDecimal(protein) } : base
   }
   const submit = (event: React.FormEvent) => { event.preventDefault(); const next = buildEntry(); if (next) onSave(next) }
   return <Modal title={entry ? `修改${isFood ? '膳食' : '运动'}` : `添加${isFood ? '膳食' : '运动'}`} onClose={onClose}><form className="entry-form" onSubmit={submit}>
     <label><span>名称</span><input autoFocus placeholder={isFood ? '例如：鸡胸肉午餐' : '例如：力量训练'} value={name} onChange={e => setName(e.target.value)}/></label>
-    <label><span>{isFood ? '膳食热量' : '运动消耗'}</span><span className="unit-input"><input required inputMode="decimal" type="number" min="0" step="any" placeholder="0" value={calories} onChange={e => setCalories(e.target.value)}/><small>kcal</small></span></label>
-    {isFood && <label><span>蛋白质</span><span className="unit-input"><input inputMode="decimal" type="number" min="0" step="any" placeholder="可选" value={protein} onChange={e => setProtein(e.target.value)}/><small>g</small></span></label>}
+    <label><span>{isFood ? '膳食热量' : '运动消耗'}</span><span className="unit-input"><input required inputMode="decimal" type="text" autoComplete="off" placeholder="0" value={calories} onChange={e => setCalories(e.target.value)}/><small>kcal</small></span></label>
+    {isFood && <label><span>蛋白质</span><span className="unit-input"><input inputMode="decimal" type="text" autoComplete="off" placeholder="可选" value={protein} onChange={e => setProtein(e.target.value)}/><small>g</small></span></label>}
     <div className="entry-form-actions">{onSaveAndContinue && <button className="secondary-button" type="button" onClick={() => { const next=buildEntry(); if(next) onSaveAndContinue(next) }}>保存并继续添加</button>}<button className="primary-button" type="submit">{entry ? '保存修改' : '完成'}</button></div>
   </form></Modal>
 }

@@ -12,6 +12,7 @@ export interface ActivityEntry {
 }
 
 export type ActivityLevel = 'sedentary' | 'standing' | 'walking' | 'physical'
+export type BodyProfile = Pick<DailyRecord, 'heightCm' | 'weightKg'>
 
 export interface DailyRecord {
   id: string

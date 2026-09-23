@@ -1,3 +1,11 @@
 .entry-form .primary-button { margin-top: 0; }
 .entry-form-actions { display: grid; grid-template-columns: 1.35fr 1fr; gap: 8px; margin-top: 5px; }
 .entry-form-actions:has(> button:only-child) { grid-template-columns: 1fr; }
+.body-card { text-align: left; color: inherit; cursor: pointer; }
+.body-card small { white-space: nowrap; }
+.profile-note { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 16px; background: color-mix(in srgb, var(--accent) 8%, var(--card)); color: var(--muted); }
+.profile-note svg { flex: none; color: var(--accent); }
+.profile-note p { margin: 0; font-size: 11px; line-height: 1.55; }
+.profile-reference { display: flex; align-items: center; justify-content: space-between; padding: 0 5px 10px; font-size: 10px; color: var(--muted); }
+.profile-reference strong { color: var(--text); font-size: 11px; }
+.primary-button:disabled { opacity: .55; }
