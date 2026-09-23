@@ -1,21 +1,21 @@
-import { format, isAfter, parseISO, subDays, subMonths } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { useMemo, useState } from 'react'
 import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { DailyRecord } from '../../types/record'
 import { calculateCalorieDeficit, getExerciseCalories, getFoodCalories, getProteinGrams } from '../../lib/calculations'
-import { calculateMonthlyStats, calculateWeeklyStats, type PeriodStats } from '../../lib/statistics'
+import { calculateMonthlyStats, calculateWeeklyStats, recordsInDayRange, type PeriodStats } from '../../lib/statistics'
 
 type Range = '7'|'30'|'90'|'all'; type Metric = 'weight'|'deficit'|'exercise'|'intake'|'protein'|'sleep'|'waist'
-const ranges: Array<[Range,string]> = [['7','7天'],['30','30天'],['90','3个月'],['all','全部']]
+const ranges: Array<[Range,string]> = [['7','7天'],['30','30天'],['90','90天'],['all','全部']]
 const metrics: Array<[Metric,string,string]> = [['weight','体重','kg'],['deficit','热量缺口','kcal'],['exercise','运动','kcal'],['intake','摄入','kcal'],['protein','蛋白质','g'],['sleep','睡眠','h'],['waist','腰围','cm']]
 const getValue = (r: DailyRecord, metric: Metric) => metric==='weight'?r.weightKg:metric==='deficit'?calculateCalorieDeficit(r):metric==='exercise'?getExerciseCalories(r):metric==='intake'?getFoodCalories(r):metric==='protein'?getProteinGrams(r):metric==='sleep'?r.sleepHours:r.waistCm
 const Stat = ({ label, value, unit, digits=0 }: {label:string;value?:number;unit:string;digits?:number}) => <div className="stat-item"><span>{label}</span><strong>{value == null ? '—' : value.toFixed(digits)} <small>{value != null && unit}</small></strong></div>
-function StatsCard({ title, stats, monthly=false }: {title:string;stats:PeriodStats;monthly?:boolean}) { return <section className="stats-card"><div className="section-heading"><div><span>摘要</span><h2>{title}</h2></div><em>{stats.recordedDays} / {stats.totalDays} 天</em></div><div className="stats-grid"><Stat label="平均体重" value={stats.averageWeight} unit="kg" digits={1}/><Stat label="体重变化" value={stats.weightChange} unit="kg" digits={1}/><Stat label="平均缺口" value={stats.averageDeficit} unit="kcal" digits={1}/><Stat label="平均运动" value={stats.averageExercise} unit="kcal" digits={1}/><Stat label="平均摄入" value={stats.averageIntake} unit="kcal" digits={1}/><Stat label="平均蛋白质" value={stats.averageProtein} unit="g" digits={1}/><Stat label="平均睡眠" value={stats.averageSleep} unit="h" digits={1}/><Stat label="平均腰围" value={stats.averageWaist} unit="cm" digits={1}/>{monthly&&<><Stat label="月初体重" value={stats.startWeight} unit="kg" digits={1}/><Stat label="当前体重" value={stats.currentWeight} unit="kg" digits={1}/></>}</div></section> }
+function StatsCard({ title, stats, monthly=false }: {title:string;stats:PeriodStats;monthly?:boolean}) { return <section className="stats-card"><div className="section-heading"><div><span>截至昨天</span><h2>{title}</h2></div><em>{stats.totalDays === 0 ? '暂无完整日' : `${stats.recordedDays} / ${stats.totalDays} 天`}</em></div><div className="stats-grid"><Stat label="平均体重" value={stats.averageWeight} unit="kg" digits={1}/><Stat label="体重变化" value={stats.weightChange} unit="kg" digits={1}/><Stat label="平均缺口" value={stats.averageDeficit} unit="kcal" digits={1}/><Stat label="平均运动" value={stats.averageExercise} unit="kcal" digits={1}/><Stat label="平均摄入" value={stats.averageIntake} unit="kcal" digits={1}/><Stat label="平均蛋白质" value={stats.averageProtein} unit="g" digits={1}/><Stat label="平均睡眠" value={stats.averageSleep} unit="h" digits={1}/><Stat label="平均腰围" value={stats.averageWaist} unit="cm" digits={1}/>{monthly&&<><Stat label="月初体重" value={stats.startWeight} unit="kg" digits={1}/><Stat label="当前体重" value={stats.currentWeight} unit="kg" digits={1}/></>}</div></section> }
 
 export function TrendsPage({ records }: {records:DailyRecord[]}) {
   const [range,setRange]=useState<Range>('30'),[metric,setMetric]=useState<Metric>('weight'),[now]=useState(()=>new Date())
   const selectedMeta=metrics.find(m=>m[0]===metric)!
-  const data=useMemo(()=>{const cutoff=range==='all'?null:range==='90'?subMonths(now,3):subDays(now,Number(range)-1); return records.filter(r=>!cutoff||isAfter(parseISO(r.date),cutoff)).sort((a,b)=>a.date.localeCompare(b.date)).map(r=>({date:r.date,label:format(parseISO(r.date),'M/d'),value:getValue(r,metric)})).filter(r=>r.value!=null)},[records,range,metric,now])
+  const data=useMemo(()=>{const ranged=range==='all'?records:recordsInDayRange(records,Number(range),now);const today=format(now,'yyyy-MM-dd');return [...ranged].sort((a,b)=>a.date.localeCompare(b.date)).map(r=>({date:r.date,label:format(parseISO(r.date),'M/d'),value:metric==='exercise'&&r.date<today?getExerciseCalories(r)??0:getValue(r,metric)})).filter(r=>r.value!=null)},[records,range,metric,now])
   const weekly=calculateWeeklyStats(records), monthly=calculateMonthlyStats(records)
   return <main className="page trends-page"><header className="page-header"><div><p className="eyebrow">看见长期变化</p><h1>趋势</h1></div><div className="trend-count">{data.length}<span>条记录</span></div></header>
     <div className="segmented">{ranges.map(([id,label])=><button key={id} className={range===id?'active':''} onClick={()=>setRange(id)}>{label}</button>)}</div>
