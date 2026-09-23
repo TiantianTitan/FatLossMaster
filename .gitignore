@@ -5,3 +5,4 @@ vite.config.js
 vite.config.d.ts
 .DS_Store
 *.local
+轻衡历史记录-*.json

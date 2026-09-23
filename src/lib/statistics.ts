@@ -1,6 +1,6 @@
 import { differenceInCalendarDays, endOfMonth, endOfWeek, isWithinInterval, parseISO, startOfMonth, startOfWeek } from 'date-fns'
 import type { DailyRecord } from '../types/record'
-import { calculateCalorieDeficit, getFoodCalories, getProteinGrams } from './calculations'
+import { calculateCalorieDeficit, getExerciseCalories, getFoodCalories, getProteinGrams } from './calculations'
 
 const mean = (values: Array<number | undefined>) => {
   const valid = values.filter((value): value is number => value != null)
@@ -13,6 +13,7 @@ export interface PeriodStats {
   averageWaist?: number
   averageIntake?: number
   averageDeficit?: number
+  averageExercise?: number
   averageProtein?: number
   averageSleep?: number
   startWeight?: number
@@ -29,7 +30,7 @@ const periodStats = (records: DailyRecord[], start: Date, end: Date): PeriodStat
   return {
     averageWeight: mean(filtered.map(r => r.weightKg)), weightChange: startWeight != null && currentWeight != null ? currentWeight - startWeight : undefined,
     averageWaist: mean(filtered.map(r => r.waistCm)), averageIntake: mean(filtered.map(getFoodCalories)),
-    averageDeficit: mean(filtered.map(calculateCalorieDeficit)), averageProtein: mean(filtered.map(getProteinGrams)), averageSleep: mean(filtered.map(r => r.sleepHours)),
+    averageDeficit: mean(filtered.map(calculateCalorieDeficit)), averageExercise: mean(filtered.map(getExerciseCalories)), averageProtein: mean(filtered.map(getProteinGrams)), averageSleep: mean(filtered.map(r => r.sleepHours)),
     startWeight, currentWeight, recordedDays: filtered.length, totalDays: differenceInCalendarDays(end, start) + 1
   }
 }

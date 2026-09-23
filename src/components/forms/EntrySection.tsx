@@ -17,7 +17,7 @@ export function EntrySection({ kind, entries, onChange }: { kind: EntryKind; ent
   }
   const saveAndContinue = (entry: Entry) => { onChange([...entries, entry]); setEditorVersion(version => version + 1) }
   return <section className="form-section entry-section">
-    <div className="form-title-row"><h2>{isFood ? '膳食单项' : '额外运动记录'}</h2><button onClick={() => setEditing(null)}><Plus size={15}/>{isFood ? '添加膳食' : '添加运动'}</button></div>
+    <div className="form-title-row"><h2>{isFood ? '膳食记录' : '运动记录'}</h2><button onClick={() => setEditing(null)}><Plus size={15}/>{isFood ? '添加膳食' : '添加运动'}</button></div>
     <div className="entry-card">
       {entries.length === 0 ? <button className="entry-empty" onClick={() => setEditing(null)}><Plus size={20}/><span>{isFood ? '添加今天吃过的食物或餐点' : '添加健身、跑步等额外消耗'}</span></button> : entries.map(entry => <div className="entry-row" key={entry.id}>
         <div><strong>{entry.name}</strong><span>{entry.calories.toLocaleString()} kcal{isFood && 'proteinGrams' in entry && entry.proteinGrams != null ? ` · 蛋白质 ${entry.proteinGrams} g` : ''}</span></div>

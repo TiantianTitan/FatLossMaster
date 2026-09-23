@@ -25,7 +25,7 @@ export function TodayPage({ record, bodyDefaults, onQuickAddFood, onQuickAddActi
     <section className="metric-grid">
       <article className="metric-card accent"><span>蛋白质</span><Value value={getProteinGrams(record)} unit="g"/><i>PROTEIN</i></article>
       <article className="metric-card body-card"><span>当前体重</span><Value value={bodyDefaults.weightKg} unit="kg"/><small>身高 {bodyDefaults.heightCm?.toLocaleString()??'—'} cm · BMI {calculateBMI(bodyDefaults.weightKg, bodyDefaults.heightCm)?.toFixed(1) ?? '—'}</small></article>
-      <article className="metric-card compact"><span className="metric-symbol"><Dumbbell size={17}/></span><span>额外运动</span><Value value={getExerciseCalories(record)} unit="kcal"/><small>今天记录</small></article>
+      <article className="metric-card compact"><span className="metric-symbol"><Dumbbell size={17}/></span><span>运动记录</span><Value value={getExerciseCalories(record)} unit="kcal"/><small>额外活动消耗</small></article>
       <article className="metric-card compact sleep-card"><span className="metric-symbol"><Moon size={17}/></span><span>睡眠时间</span><Value value={record?.sleepHours} unit="h"/><small>昨晚睡眠</small></article>
     </section>
     {!hasData && <div className="empty-note"><span>从今天开始</span><p>使用上方快捷按钮，几秒钟完成第一条记录。</p></div>}
