@@ -1,6 +1,6 @@
 import { differenceInCalendarDays, endOfMonth, endOfWeek, isWithinInterval, parseISO, startOfMonth, startOfWeek } from 'date-fns'
 import type { DailyRecord } from '../types/record'
-import { calculateCalorieDeficit } from './calculations'
+import { calculateCalorieDeficit, getFoodCalories, getProteinGrams } from './calculations'
 
 const mean = (values: Array<number | undefined>) => {
   const valid = values.filter((value): value is number => value != null)
@@ -27,8 +27,8 @@ const periodStats = (records: DailyRecord[], start: Date, end: Date): PeriodStat
   const currentWeight = weights.at(-1)?.weightKg
   return {
     averageWeight: mean(filtered.map(r => r.weightKg)), weightChange: startWeight != null && currentWeight != null ? currentWeight - startWeight : undefined,
-    averageWaist: mean(filtered.map(r => r.waistCm)), averageIntake: mean(filtered.map(r => r.foodCalories)),
-    averageDeficit: mean(filtered.map(calculateCalorieDeficit)), averageProtein: mean(filtered.map(r => r.proteinGrams)),
+    averageWaist: mean(filtered.map(r => r.waistCm)), averageIntake: mean(filtered.map(getFoodCalories)),
+    averageDeficit: mean(filtered.map(calculateCalorieDeficit)), averageProtein: mean(filtered.map(getProteinGrams)),
     startWeight, currentWeight, recordedDays: filtered.length, totalDays: differenceInCalendarDays(end, start) + 1
   }
 }

@@ -1,16 +1,44 @@
-import type { DailyRecord } from '../types/record'
+import type { ActivityLevel, DailyRecord } from '../types/record'
 
 export const calculateBMI = (weightKg?: number, heightCm?: number) => {
   if (!weightKg || !heightCm) return undefined
   return weightKg / ((heightCm / 100) ** 2)
 }
 
+// A deliberately simple adult baseline. It remains an estimate and can always be overridden.
+export const estimateRestingCalories = (weightKg?: number) => weightKg ? Math.round(weightKg * 22) : undefined
+
+export const activityLevels: Array<{ id: ActivityLevel; name: string; description: string; factor: number }> = [
+  { id: 'sedentary', name: '静坐办公', description: '办公桌为主，少量走动', factor: .2 },
+  { id: 'standing', name: '站立工作', description: '经常站立，间歇走动', factor: .3 },
+  { id: 'walking', name: '走动工作', description: '工作中频繁步行', factor: .45 },
+  { id: 'physical', name: '体力工作', description: '搬抬、装卸或重体力劳动', factor: .6 },
+]
+
+export const estimateDailyActivityCalories = (restingCalories?: number, level?: ActivityLevel) => {
+  const factor = activityLevels.find(item => item.id === level)?.factor
+  return restingCalories && factor ? Math.round(restingCalories * factor) : undefined
+}
+
+export const getFoodCalories = (record?: Partial<DailyRecord>) => record?.foodEntries != null
+  ? record.foodEntries.length ? record.foodEntries.reduce((sum, item) => sum + item.calories, 0) : undefined
+  : record?.foodCalories
+
+export const getProteinGrams = (record?: Partial<DailyRecord>) => record?.foodEntries != null
+  ? record.foodEntries.length ? record.foodEntries.reduce((sum, item) => sum + (item.proteinGrams ?? 0), 0) : undefined
+  : record?.proteinGrams
+
+export const getExerciseCalories = (record?: Partial<DailyRecord>) => record?.activityEntries != null
+  ? record.activityEntries.reduce((sum, item) => sum + item.calories, 0)
+  : record?.exerciseCalories
+
 export const calculateTotalCalories = (record?: Partial<DailyRecord>) =>
-  (record?.restingCalories ?? 0) + (record?.dailyCalories ?? 0) + (record?.exerciseCalories ?? 0)
+  (record?.restingCalories ?? 0) + (record?.dailyCalories ?? 0) + (getExerciseCalories(record) ?? 0)
 
 export const calculateCalorieDeficit = (record?: Partial<DailyRecord>) => {
-  if (record?.foodCalories == null) return undefined
-  return calculateTotalCalories(record) - record.foodCalories
+  const intake = getFoodCalories(record)
+  if (intake == null) return undefined
+  return calculateTotalCalories(record) - intake
 }
 
 export const round = (value?: number, digits = 0) => value == null ? undefined : Number(value.toFixed(digits))
