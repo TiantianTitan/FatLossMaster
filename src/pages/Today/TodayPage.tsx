@@ -1,16 +1,18 @@
-import { ArrowUpRight, Dumbbell, Pencil, UserRound } from 'lucide-react'
+import { ArrowUpRight, Dumbbell, Moon, Pencil, Plus, Utensils } from 'lucide-react'
 import { useState } from 'react'
-import type { BodyProfile, DailyRecord } from '../../types/record'
+import type { ActivityEntry, BodyProfile, DailyRecord, FoodEntry } from '../../types/record'
 import { calculateBMI, calculateCalorieDeficit, calculateTotalCalories, getExerciseCalories, getFoodCalories, getProteinGrams } from '../../lib/calculations'
 import { displayDate, todayKey } from '../../lib/date'
-import { Modal } from '../../components/ui/Modal'
-import { DecimalInput } from '../../components/ui/DecimalInput'
+import { EntryEditor, type Entry, type EntryKind } from '../../components/forms/EntrySection'
+import { Toast } from '../../components/ui/Toast'
 
 const Value = ({ value, unit }: { value?: number; unit: string }) => <strong>{value == null ? '—' : value.toLocaleString()} {value != null && <small>{unit}</small>}</strong>
 
-export function TodayPage({ record, bodyDefaults, onUpdateBody, onEdit }: { record?: DailyRecord; bodyDefaults: BodyProfile; onUpdateBody: (body: BodyProfile) => Promise<void>; onEdit: () => void }) {
-  const [editingBody,setEditingBody]=useState(false)
+export function TodayPage({ record, bodyDefaults, onQuickAddFood, onQuickAddActivity, onEdit }: { record?: DailyRecord; bodyDefaults: BodyProfile; onQuickAddFood: (entry:FoodEntry)=>Promise<void>; onQuickAddActivity:(entry:ActivityEntry)=>Promise<void>; onEdit: () => void }) {
+  const [quickKind,setQuickKind]=useState<EntryKind>()
+  const [message,setMessage]=useState('')
   const deficit = calculateCalorieDeficit(record), total = calculateTotalCalories(record), hasData = Boolean(record)
+  const saveQuick=async(entry:Entry)=>{if(quickKind==='food')await onQuickAddFood(entry as FoodEntry);else await onQuickAddActivity(entry as ActivityEntry);setMessage(quickKind==='food'?'进食已记入今天':'运动已记入今天');setQuickKind(undefined);window.setTimeout(()=>setMessage(''),1800)}
   return <main className="page today-page">
     <header className="page-header"><div><p className="eyebrow">{displayDate(todayKey())}</p><h1>今天</h1></div><div className="day-mark">{new Date().getDate()}</div></header>
     <section className={`hero-card ${deficit != null && deficit < 0 ? 'surplus' : ''}`}>
@@ -19,19 +21,16 @@ export function TodayPage({ record, bodyDefaults, onUpdateBody, onEdit }: { reco
       <div className="hero-caption">{deficit == null ? '记录膳食和消耗后自动计算' : deficit >= 0 ? '消耗高于摄入' : '摄入高于消耗'}</div>
       <div className="energy-row"><div><span>摄入</span><Value value={getFoodCalories(record)} unit="kcal"/></div><ArrowUpRight size={20}/><div><span>消耗</span><Value value={total || undefined} unit="kcal"/></div></div>
     </section>
+    <section className="quick-add-grid" aria-label="快速记录"><button onClick={()=>setQuickKind('food')}><span className="quick-icon food"><Utensils size={19}/></span><span><strong>记录进食</strong><small>热量与蛋白质</small></span><Plus size={18}/></button><button onClick={()=>setQuickKind('activity')}><span className="quick-icon exercise"><Dumbbell size={19}/></span><span><strong>记录运动</strong><small>额外活动消耗</small></span><Plus size={18}/></button></section>
     <section className="metric-grid">
       <article className="metric-card accent"><span>蛋白质</span><Value value={getProteinGrams(record)} unit="g"/><i>PROTEIN</i></article>
-      <button className="metric-card body-card" onClick={()=>setEditingBody(true)}><span>当前身体数据</span><Value value={bodyDefaults.weightKg} unit="kg"/><small>身高 {bodyDefaults.heightCm?.toLocaleString()??'—'} cm · BMI {calculateBMI(bodyDefaults.weightKg, bodyDefaults.heightCm)?.toFixed(1) ?? '—'}</small></button>
-      <article className="metric-card wide"><div className="metric-icon"><Dumbbell size={20}/></div><div><span>额外运动</span><Value value={getExerciseCalories(record)} unit="kcal"/></div><div className="mini-bars"><i/><i/><i/><i/><i/></div></article>
+      <article className="metric-card body-card"><span>当前体重</span><Value value={bodyDefaults.weightKg} unit="kg"/><small>身高 {bodyDefaults.heightCm?.toLocaleString()??'—'} cm · BMI {calculateBMI(bodyDefaults.weightKg, bodyDefaults.heightCm)?.toFixed(1) ?? '—'}</small></article>
+      <article className="metric-card compact"><span className="metric-symbol"><Dumbbell size={17}/></span><span>额外运动</span><Value value={getExerciseCalories(record)} unit="kcal"/><small>今天记录</small></article>
+      <article className="metric-card compact sleep-card"><span className="metric-symbol"><Moon size={17}/></span><span>睡眠时间</span><Value value={record?.sleepHours} unit="h"/><small>昨晚睡眠</small></article>
     </section>
-    {!hasData && <div className="empty-note"><span>从今天开始</span><p>你的第一条记录还在等你，通常只需要一分钟。</p></div>}
-    <button className="primary-button" onClick={onEdit}><Pencil size={18}/>{hasData ? '编辑今日记录' : '记录今天'}</button>
-    {editingBody&&<BodyEditor value={bodyDefaults} onClose={()=>setEditingBody(false)} onSave={async body=>{await onUpdateBody(body);setEditingBody(false)}}/>}
+    {!hasData && <div className="empty-note"><span>从今天开始</span><p>使用上方快捷按钮，几秒钟完成第一条记录。</p></div>}
+    <button className="primary-button" onClick={onEdit}><Pencil size={18}/>{hasData ? '查看今日明细' : '设置今日活动'}</button>
+    {quickKind&&<EntryEditor kind={quickKind} entry={null} onSave={saveQuick} onClose={()=>setQuickKind(undefined)}/>}
+    {message&&<Toast>{message}</Toast>}
   </main>
-}
-
-function BodyEditor({value,onSave,onClose}:{value:BodyProfile;onSave:(body:BodyProfile)=>Promise<void>;onClose:()=>void}){
-  const [heightCm,setHeight]=useState(value.heightCm),[weightKg,setWeight]=useState(value.weightKg),[saving,setSaving]=useState(false)
-  const submit=async(event:React.FormEvent)=>{event.preventDefault();if(heightCm==null&&weightKg==null)return;setSaving(true);await onSave({heightCm,weightKg})}
-  return <Modal title="当前身体数据" onClose={onClose}><form className="entry-form body-editor" onSubmit={submit}><div className="profile-note"><UserRound size={20}/><p>保存后默认记录到今天，以后会沿用最近一次数据，无需每天重复填写。</p></div><label><span>身高</span><span className="unit-input"><DecimalInput value={heightCm} onValueChange={setHeight} placeholder="175"/><small>cm</small></span></label><label><span>体重</span><span className="unit-input"><DecimalInput value={weightKg} onValueChange={setWeight} placeholder="75,25"/><small>kg</small></span></label><button className="primary-button" disabled={saving}>{saving?'保存中…':'保存到今天'}</button></form></Modal>
 }

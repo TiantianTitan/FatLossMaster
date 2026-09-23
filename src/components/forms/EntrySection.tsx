@@ -4,10 +4,10 @@ import type { ActivityEntry, FoodEntry } from '../../types/record'
 import { Modal } from '../ui/Modal'
 import { parseDecimal } from '../../lib/numbers'
 
-type Kind = 'food' | 'activity'
-type Entry = FoodEntry | ActivityEntry
+export type EntryKind = 'food' | 'activity'
+export type Entry = FoodEntry | ActivityEntry
 
-export function EntrySection({ kind, entries, onChange }: { kind: Kind; entries: Entry[]; onChange: (entries: Entry[]) => void }) {
+export function EntrySection({ kind, entries, onChange }: { kind: EntryKind; entries: Entry[]; onChange: (entries: Entry[]) => void }) {
   const [editing, setEditing] = useState<Entry | null | undefined>(undefined)
   const [editorVersion, setEditorVersion] = useState(0)
   const isFood = kind === 'food'
@@ -29,21 +29,22 @@ export function EntrySection({ kind, entries, onChange }: { kind: Kind; entries:
   </section>
 }
 
-function EntryEditor({ kind, entry, onSave, onSaveAndContinue, onClose }: { kind: Kind; entry: Entry | null; onSave: (entry: Entry) => void; onSaveAndContinue?: (entry: Entry) => void; onClose: () => void }) {
+export function EntryEditor({ kind, entry, onSave, onSaveAndContinue, onClose }: { kind: EntryKind; entry: Entry | null; onSave: (entry: Entry) => void; onSaveAndContinue?: (entry: Entry) => void; onClose: () => void }) {
   const [name, setName] = useState(entry?.name ?? '')
   const [calories, setCalories] = useState(entry?.calories?.toString() ?? '')
   const [protein, setProtein] = useState(entry && 'proteinGrams' in entry ? entry.proteinGrams?.toString() ?? '' : '')
+  const [error,setError]=useState(''),[saving,setSaving]=useState(false)
   const isFood = kind === 'food'
   const buildEntry = () => {
     const value = parseDecimal(calories); if (!value || value < 0) return
     const base = { id: entry?.id ?? crypto.randomUUID(), name: name.trim() || (isFood ? '快速记录' : '运动记录'), calories: value }
     return isFood ? { ...base, proteinGrams: protein === '' ? undefined : parseDecimal(protein) } : base
   }
-  const submit = (event: React.FormEvent) => { event.preventDefault(); const next = buildEntry(); if (next) onSave(next) }
+  const submit = async(event: React.FormEvent) => { event.preventDefault(); const next = buildEntry(); if(!next){setError('请输入有效的热量');return}setSaving(true);await onSave(next);setSaving(false) }
   return <Modal title={entry ? `修改${isFood ? '膳食' : '运动'}` : `添加${isFood ? '膳食' : '运动'}`} onClose={onClose}><form className="entry-form" onSubmit={submit}>
-    <label><span>名称</span><input autoFocus placeholder={isFood ? '例如：鸡胸肉午餐' : '例如：力量训练'} value={name} onChange={e => setName(e.target.value)}/></label>
-    <label><span>{isFood ? '膳食热量' : '运动消耗'}</span><span className="unit-input"><input required inputMode="decimal" type="text" autoComplete="off" placeholder="0" value={calories} onChange={e => setCalories(e.target.value)}/><small>kcal</small></span></label>
+    <label><span>名称 <small>可选</small></span><input placeholder={isFood ? '例如：鸡胸肉午餐' : '例如：力量训练'} value={name} onChange={e => setName(e.target.value)}/></label>
+    <label><span>{isFood ? '膳食热量' : '运动消耗'}</span><span className="unit-input"><input autoFocus inputMode="decimal" type="text" autoComplete="off" placeholder="0" value={calories} onChange={e => {setCalories(e.target.value);setError('')}}/><small>kcal</small></span></label>
     {isFood && <label><span>蛋白质</span><span className="unit-input"><input inputMode="decimal" type="text" autoComplete="off" placeholder="可选" value={protein} onChange={e => setProtein(e.target.value)}/><small>g</small></span></label>}
-    <div className="entry-form-actions">{onSaveAndContinue && <button className="secondary-button" type="button" onClick={() => { const next=buildEntry(); if(next) onSaveAndContinue(next) }}>保存并继续添加</button>}<button className="primary-button" type="submit">{entry ? '保存修改' : '完成'}</button></div>
+    {error&&<p className="form-error" role="alert">{error}</p>}<div className="entry-form-actions">{onSaveAndContinue && <button className="secondary-button" type="button" disabled={saving} onClick={async()=>{const next=buildEntry();if(!next){setError('请输入有效的热量');return}setSaving(true);await onSaveAndContinue(next);setSaving(false)}}>保存并继续添加</button>}<button className="primary-button" type="submit" disabled={saving}>{saving?'保存中…':entry?'保存修改':'完成'}</button></div>
   </form></Modal>
 }

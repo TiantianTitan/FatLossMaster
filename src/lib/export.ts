@@ -9,7 +9,7 @@ const download = (content: string, type: string, name: string) => {
 const csvCell = (value: unknown) => `"${String(value ?? '').replaceAll('"', '""')}"`
 
 export const exportCSV = (records: DailyRecord[]) => {
-  const keys = ['date','heightCm','weightKg','waistCm','restingCalories','dailyCalories','exerciseCalories','totalCalories','foodCalories','proteinGrams','calorieDeficit','notes'] as const
+  const keys = ['date','heightCm','weightKg','waistCm','sleepHours','restingCalories','dailyCalories','exerciseCalories','totalCalories','foodCalories','proteinGrams','calorieDeficit','notes'] as const
   const rows = records.map(r => ({ ...r, exerciseCalories: getExerciseCalories(r), foodCalories: getFoodCalories(r), proteinGrams: getProteinGrams(r), totalCalories: calculateTotalCalories(r), calorieDeficit: calculateCalorieDeficit(r) }))
   download('\ufeff' + [keys.join(','), ...rows.map(row => keys.map(k => csvCell(row[k])).join(','))].join('\n'), 'text/csv;charset=utf-8', `轻衡备份-${new Date().toISOString().slice(0,10)}.csv`)
 }
