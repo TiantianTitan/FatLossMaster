@@ -12,7 +12,8 @@ export interface ActivityEntry {
 }
 
 export type ActivityLevel = 'sedentary' | 'standing' | 'walking' | 'physical'
-export type BodyProfile = Pick<DailyRecord, 'heightCm' | 'weightKg' | 'waistCm'>
+export type Sex = 'male' | 'female'
+export type BodyProfile = Pick<DailyRecord, 'heightCm' | 'weightKg' | 'waistCm' | 'ageYears' | 'sex'>
 
 export interface DailyRecord {
   id: string
@@ -20,6 +21,8 @@ export interface DailyRecord {
   heightCm?: number
   weightKg?: number
   waistCm?: number
+  ageYears?: number
+  sex?: Sex
   sleepHours?: number
   restingCalories?: number
   dailyCalories?: number
@@ -35,6 +38,6 @@ export interface DailyRecord {
   updatedAt: string
 }
 
-export type NumericRecordKey = 'heightCm' | 'weightKg' | 'waistCm' | 'sleepHours' | 'restingCalories' | 'dailyCalories' | 'exerciseCalories' | 'foodCalories' | 'proteinGrams'
+export type NumericRecordKey = 'heightCm' | 'weightKg' | 'waistCm' | 'ageYears' | 'sleepHours' | 'restingCalories' | 'dailyCalories' | 'exerciseCalories' | 'foodCalories' | 'proteinGrams'
 export type ThemeMode = 'system' | 'light' | 'dark'
 export type Page = 'today' | 'records' | 'trends' | 'settings'

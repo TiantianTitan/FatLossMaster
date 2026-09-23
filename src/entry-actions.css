@@ -6,6 +6,10 @@
 .profile-note { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 16px; background: color-mix(in srgb, var(--accent) 8%, var(--card)); color: var(--muted); }
 .profile-note svg { flex: none; color: var(--accent); }
 .profile-note p { margin: 0; font-size: 11px; line-height: 1.55; }
+.profile-field { min-height: 58px; display: flex; align-items: center; justify-content: space-between; background: var(--card-2); border-radius: 16px; padding: 9px 14px; font-size: 12px; }
+.sex-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; width: 150px; }
+.sex-picker button { min-height: 38px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--muted); font-weight: 700; }
+.sex-picker button.active { border-color: var(--accent); background: var(--accent); color: #fff; }
 .profile-reference { display: flex; align-items: center; justify-content: space-between; padding: 0 5px 10px; font-size: 10px; color: var(--muted); }
 .profile-reference strong { color: var(--text); font-size: 11px; }
 .primary-button:disabled { opacity: .55; }

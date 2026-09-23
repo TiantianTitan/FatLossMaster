@@ -1,12 +1,16 @@
-import type { ActivityLevel, DailyRecord } from '../types/record'
+import type { ActivityLevel, DailyRecord, Sex } from '../types/record'
 
 export const calculateBMI = (weightKg?: number, heightCm?: number) => {
   if (!weightKg || !heightCm) return undefined
   return weightKg / ((heightCm / 100) ** 2)
 }
 
-// A deliberately simple adult baseline. It remains an estimate and can always be overridden.
-export const estimateRestingCalories = (weightKg?: number) => weightKg ? Math.round(weightKg * 22 * 10) / 10 : undefined
+// Mifflin–St Jeor resting metabolic rate estimate for adults.
+export const estimateRestingCalories = (weightKg?: number, heightCm?: number, ageYears?: number, sex?: Sex) => {
+  if (!weightKg || !heightCm || !ageYears || !sex) return undefined
+  const estimate = 10 * weightKg + 6.25 * heightCm - 5 * ageYears + (sex === 'male' ? 5 : -161)
+  return Math.round(estimate * 10) / 10
+}
 
 export const activityLevels: Array<{ id: ActivityLevel; name: string; description: string; factor: number }> = [
   { id: 'sedentary', name: '静坐办公', description: '办公桌为主，少量走动', factor: .2 },
