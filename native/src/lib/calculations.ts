@@ -12,32 +12,16 @@ export const estimateRestingCalories = (weightKg?: number, heightCm?: number, ag
   return Math.round(estimate * 10) / 10
 }
 
-export const activityLevels: Array<{ id: ActivityLevel; name: string; description: string; factor: number; baselineSteps: number }> = [
-  { id: 'sedentary', name: '静坐办公', description: '办公桌为主，少量走动', factor: .2, baselineSteps: 3500 },
-  { id: 'standing', name: '站立工作', description: '经常站立，间歇走动', factor: .3, baselineSteps: 6000 },
-  { id: 'walking', name: '走动工作', description: '工作中频繁步行', factor: .45, baselineSteps: 9000 },
-  { id: 'physical', name: '体力工作', description: '搬抬、装卸或重体力劳动', factor: .6, baselineSteps: 11000 },
+export const activityLevels: Array<{ id: ActivityLevel; name: string; description: string; factor: number }> = [
+  { id: 'sedentary', name: '静坐办公', description: '办公桌为主，少量走动', factor: .2 },
+  { id: 'standing', name: '站立工作', description: '经常站立，间歇走动', factor: .3 },
+  { id: 'walking', name: '走动工作', description: '工作中频繁步行', factor: .45 },
+  { id: 'physical', name: '体力工作', description: '搬抬、装卸或重体力劳动', factor: .6 },
 ]
 
 export const estimateDailyActivityCalories = (restingCalories?: number, level?: ActivityLevel) => {
   const factor = activityLevels.find(item => item.id === level)?.factor
   return restingCalories && factor ? Math.round(restingCalories * factor * 10) / 10 : undefined
-}
-
-export const estimateStepCaloriesAdjustment = (record?: Partial<DailyRecord>) => {
-  if (record?.stepCount == null || record.stepCount < 0 || !record.weightKg) return undefined
-  const level = activityLevels.find(item => item.id === (record.activityLevel ?? 'sedentary')) ?? activityLevels[0]
-  const base = estimateDailyActivityCalories(record.restingCalories, level.id) ?? record.dailyCalories
-  if (base == null) return undefined
-  const raw = (record.stepCount - level.baselineSteps) * record.weightKg * .0005
-  const limited = Math.min(base * .4, Math.max(-base * .25, raw))
-  return Math.round(limited * 10) / 10
-}
-
-export const getDailyActivityCalories = (record?: Partial<DailyRecord>) => {
-  const base = estimateDailyActivityCalories(record?.restingCalories, record?.activityLevel) ?? record?.dailyCalories
-  if (base == null) return undefined
-  return Math.round((base + (estimateStepCaloriesAdjustment(record) ?? 0)) * 10) / 10
 }
 
 export const getFoodCalories = (record?: Partial<DailyRecord>) => record?.foodEntries != null
@@ -49,11 +33,11 @@ export const getProteinGrams = (record?: Partial<DailyRecord>) => record?.foodEn
   : record?.proteinGrams
 
 export const getExerciseCalories = (record?: Partial<DailyRecord>) => record?.activityEntries != null
-  ? record.activityEntries.reduce((sum, item) => sum + (record.stepCount != null && item.includedInSteps ? 0 : item.calories), 0)
+  ? record.activityEntries.reduce((sum, item) => sum + item.calories, 0)
   : record?.exerciseCalories
 
 export const calculateTotalCalories = (record?: Partial<DailyRecord>) =>
-  (record?.restingCalories ?? 0) + (getDailyActivityCalories(record) ?? 0) + (getExerciseCalories(record) ?? 0)
+  (record?.restingCalories ?? 0) + (record?.dailyCalories ?? 0) + (getExerciseCalories(record) ?? 0)
 
 export const calculateCalorieDeficit = (record?: Partial<DailyRecord>) => {
   const intake = getFoodCalories(record)

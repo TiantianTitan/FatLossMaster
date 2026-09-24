@@ -9,7 +9,6 @@ export interface ActivityEntry {
   id: string
   name: string
   calories: number
-  includedInSteps?: boolean
 }
 
 export type ActivityLevel = 'sedentary' | 'standing' | 'walking' | 'physical'
@@ -25,7 +24,6 @@ export interface DailyRecord {
   ageYears?: number
   sex?: Sex
   sleepHours?: number
-  stepCount?: number
   restingCalories?: number
   dailyCalories?: number
   exerciseCalories?: number
@@ -40,6 +38,6 @@ export interface DailyRecord {
   updatedAt: string
 }
 
-export type NumericRecordKey = 'heightCm' | 'weightKg' | 'waistCm' | 'ageYears' | 'sleepHours' | 'stepCount' | 'restingCalories' | 'dailyCalories' | 'exerciseCalories' | 'foodCalories' | 'proteinGrams'
+export type NumericRecordKey = 'heightCm' | 'weightKg' | 'waistCm' | 'ageYears' | 'sleepHours' | 'restingCalories' | 'dailyCalories' | 'exerciseCalories' | 'foodCalories' | 'proteinGrams'
 export type ThemeMode = 'system' | 'light' | 'dark'
 export type Page = 'today' | 'records' | 'trends' | 'settings'

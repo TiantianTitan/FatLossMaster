@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "轻衡",
+    "slug": "fatlossmaster",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./public/pwa-512.png",
+    "scheme": "qingheng",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.haotianx.fatlossmaster",
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "轻衡需要读取体重、睡眠与活动能量，用于减少手动记录。",
+        "NSHealthUpdateUsageDescription": "轻衡仅在你主动选择时写入健康数据。",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.haotianx.fatlossmaster",
+      "adaptiveIcon": {
+        "foregroundImage": "./public/pwa-512.png",
+        "backgroundColor": "#F3F0E8"
+      }
+    },
+    "plugins": [
+      "expo-dev-client",
+      "expo-document-picker",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "轻衡需要读取体重、睡眠与活动能量，用于减少手动记录。",
+          "NSHealthUpdateUsageDescription": "轻衡仅在你主动选择时写入健康数据。"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ac6b0ab5-9672-45fc-a292-2e58c88f19a9"
+      }
+    }
+  }
+}

@@ -2,7 +2,7 @@ import type { DailyRecord } from '../types/record'
 
 export const parseBackup = (text: string): DailyRecord[] => {
   const data: unknown = JSON.parse(text)
-  if (!data || typeof data !== 'object' || !('version' in data) || !('records' in data) || ![1, 2, 3].includes(Number(data.version)) || !Array.isArray(data.records)) throw new Error('不是有效的轻衡备份文件')
+  if (!data || typeof data !== 'object' || !('version' in data) || !('records' in data) || ![1, 2].includes(Number(data.version)) || !Array.isArray(data.records)) throw new Error('不是有效的轻衡备份文件')
   const dates = new Set<string>()
   return data.records.map((item: unknown) => {
     if (!item || typeof item !== 'object') throw new Error('备份中包含无效记录')
@@ -11,9 +11,8 @@ export const parseBackup = (text: string): DailyRecord[] => {
     if (record.sex != null && !['male','female'].includes(record.sex)) throw new Error(`${record.date} 的性别格式无效`)
     if (record.ageYears != null && (typeof record.ageYears !== 'number' || !Number.isFinite(record.ageYears) || record.ageYears <= 0 || record.ageYears > 130)) throw new Error(`${record.date} 的年龄无效`)
     if (record.sleepHours != null && (typeof record.sleepHours !== 'number' || !Number.isFinite(record.sleepHours) || record.sleepHours < 0 || record.sleepHours > 24)) throw new Error(`${record.date} 的睡眠时间无效`)
-    if (record.stepCount != null && (typeof record.stepCount !== 'number' || !Number.isFinite(record.stepCount) || record.stepCount < 0 || record.stepCount > 200000)) throw new Error(`${record.date} 的步数无效`)
     if (record.foodEntries != null && (!Array.isArray(record.foodEntries) || record.foodEntries.some(entry => !entry?.id || typeof entry.name !== 'string' || typeof entry.calories !== 'number' || (entry.proteinGrams != null && typeof entry.proteinGrams !== 'number')))) throw new Error(`${record.date} 的膳食单项格式无效`)
-    if (record.activityEntries != null && (!Array.isArray(record.activityEntries) || record.activityEntries.some(entry => !entry?.id || typeof entry.name !== 'string' || typeof entry.calories !== 'number' || (entry.includedInSteps != null && typeof entry.includedInSteps !== 'boolean')))) throw new Error(`${record.date} 的运动单项格式无效`)
+    if (record.activityEntries != null && (!Array.isArray(record.activityEntries) || record.activityEntries.some(entry => !entry?.id || typeof entry.name !== 'string' || typeof entry.calories !== 'number'))) throw new Error(`${record.date} 的运动单项格式无效`)
     if (dates.has(record.date)) throw new Error(`备份中 ${record.date} 存在重复记录`)
     dates.add(record.date)
     return record

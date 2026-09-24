@@ -33,9 +33,4 @@ describe('period statistics', () => {
     const records=Array.from({length:9},(_,index)=>record(`2026-09-${String(15+index).padStart(2,'0')}`))
     expect(recordsInDayRange(records,7,new Date(2026,8,23,18)).map(item=>item.date)).toEqual(['2026-09-17','2026-09-18','2026-09-19','2026-09-20','2026-09-21','2026-09-22','2026-09-23'])
   })
-
-  it('averages steps only across days that recorded them', () => {
-    const stats = calculateWeeklyStats([record('2026-09-21',{stepCount:4000}),record('2026-09-22',{stepCount:8000}),record('2026-09-23',{stepCount:20000})],new Date(2026,8,23,15))
-    expect(stats.averageSteps).toBe(6000)
-  })
 })

@@ -16,7 +16,6 @@ export interface PeriodStats {
   averageExercise?: number
   averageProtein?: number
   averageSleep?: number
-  averageSteps?: number
   startWeight?: number
   currentWeight?: number
   recordedDays: number
@@ -32,7 +31,7 @@ const periodStats = (records: DailyRecord[], start: Date, end: Date): PeriodStat
   return {
     averageWeight: mean(filtered.map(r => r.weightKg)), weightChange: startWeight != null && currentWeight != null ? currentWeight - startWeight : undefined,
     averageWaist: mean(filtered.map(r => r.waistCm)), averageIntake: mean(filtered.map(getFoodCalories)),
-    averageDeficit: mean(filtered.map(calculateCalorieDeficit)), averageExercise: mean(filtered.map(r => getExerciseCalories(r) ?? 0)), averageProtein: mean(filtered.map(getProteinGrams)), averageSleep: mean(filtered.map(r => r.sleepHours)), averageSteps: mean(filtered.map(r => r.stepCount)),
+    averageDeficit: mean(filtered.map(calculateCalorieDeficit)), averageExercise: mean(filtered.map(r => getExerciseCalories(r) ?? 0)), averageProtein: mean(filtered.map(getProteinGrams)), averageSleep: mean(filtered.map(r => r.sleepHours)),
     startWeight, currentWeight, recordedDays: filtered.length, totalDays: differenceInCalendarDays(end, start) + 1
   }
 }

@@ -1,5 +1,5 @@
 import type { DailyRecord } from '../types/record'
-import { calculateCalorieDeficit, calculateTotalCalories, getExerciseCalories, getFoodCalories, getProteinGrams } from './calculations'
+import { calculateCalorieDeficit, calculateTotalCalories, estimateStepCaloriesAdjustment, getDailyActivityCalories, getExerciseCalories, getFoodCalories, getProteinGrams } from './calculations'
 
 const download = (content: string, type: string, name: string) => {
   const url = URL.createObjectURL(new Blob([content], { type }))
@@ -9,8 +9,8 @@ const download = (content: string, type: string, name: string) => {
 const csvCell = (value: unknown) => `"${String(value ?? '').replaceAll('"', '""')}"`
 
 export const exportCSV = (records: DailyRecord[]) => {
-  const keys = ['date','sex','ageYears','heightCm','weightKg','waistCm','sleepHours','restingCalories','dailyCalories','exerciseCalories','totalCalories','foodCalories','proteinGrams','calorieDeficit','notes'] as const
-  const rows = records.map(r => ({ ...r, exerciseCalories: getExerciseCalories(r), foodCalories: getFoodCalories(r), proteinGrams: getProteinGrams(r), totalCalories: calculateTotalCalories(r), calorieDeficit: calculateCalorieDeficit(r) }))
+  const keys = ['date','sex','ageYears','heightCm','weightKg','waistCm','sleepHours','stepCount','restingCalories','dailyCalories','stepCaloriesAdjustment','exerciseCalories','totalCalories','foodCalories','proteinGrams','calorieDeficit','notes'] as const
+  const rows = records.map(r => ({ ...r, dailyCalories: getDailyActivityCalories(r), stepCaloriesAdjustment: estimateStepCaloriesAdjustment(r), exerciseCalories: getExerciseCalories(r), foodCalories: getFoodCalories(r), proteinGrams: getProteinGrams(r), totalCalories: calculateTotalCalories(r), calorieDeficit: calculateCalorieDeficit(r) }))
   download('\ufeff' + [keys.join(','), ...rows.map(row => keys.map(k => csvCell(row[k])).join(','))].join('\n'), 'text/csv;charset=utf-8', `轻衡备份-${new Date().toISOString().slice(0,10)}.csv`)
 }
-export const exportJSON = (records: DailyRecord[]) => download(JSON.stringify({ version: 2, exportedAt: new Date().toISOString(), records }, null, 2), 'application/json', `轻衡备份-${new Date().toISOString().slice(0,10)}.json`)
+export const exportJSON = (records: DailyRecord[]) => download(JSON.stringify({ version: 3, exportedAt: new Date().toISOString(), records }, null, 2), 'application/json', `轻衡备份-${new Date().toISOString().slice(0,10)}.json`)

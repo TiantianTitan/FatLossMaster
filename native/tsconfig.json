@@ -1,0 +1,20 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true
+  },
+  "include": [
+    "App.tsx",
+    "index.ts",
+    "src/native/**/*.ts",
+    "src/native/**/*.tsx",
+    "src/types/**/*.ts",
+    "src/lib/calculations.ts",
+    "src/lib/entries.ts",
+    "src/lib/recordDefaults.ts",
+    "src/lib/statistics.ts",
+    "src/lib/import.ts",
+    "src/lib/date.ts"
+  ]
+}
