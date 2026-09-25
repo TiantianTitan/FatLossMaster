@@ -10,11 +10,6 @@
 .daily-breakdown strong { font-family: Iowan Old Style, serif; font-size: 16px; }
 .daily-breakdown b { color: var(--muted); font-size: 10px; opacity: .55; }
 .daily-breakdown div:last-child strong { color: var(--accent); }
-.entry-step-toggle { gap: 14px; cursor: pointer; }
-.entry-step-toggle > span { display: flex; flex: 1; flex-direction: column; gap: 3px; }
-.entry-step-toggle > span strong { font-size: 12px; }
-.entry-step-toggle > span small { color: var(--muted); font-size: 9px; line-height: 1.4; }
-.entry-step-toggle > input { width: 42px; height: 24px; accent-color: var(--accent); flex: none; }
 .body-card { text-align: left; color: inherit; cursor: pointer; }
 .body-card small { white-space: nowrap; }
 .profile-note { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 16px; background: color-mix(in srgb, var(--accent) 8%, var(--card)); color: var(--muted); }
@@ -36,11 +31,32 @@
 .quick-icon { width: 36px; height: 36px; border-radius: 13px; display: grid; place-items: center; }
 .quick-icon.food { color: #5b682f; background: var(--lime); }
 .quick-icon.exercise { color: #fff; background: var(--accent); }
+.hero-label-row { position: relative; display: flex; align-items: center; gap: 8px; }
+.hero-label-row p { margin: 0; font-size: 13px; letter-spacing: .12em; }
+.hero-label-row span { padding: 3px 7px; border: 1px solid color-mix(in srgb,currentColor 22%,transparent); border-radius: 999px; font-size: 10px; line-height: 1; letter-spacing: .05em; opacity: .68; }
+.metric-card-title { display: flex; align-items: center; gap: 7px; }
+.metric-card-title em { padding: 3px 6px; border-radius: 999px; background: color-mix(in srgb,var(--accent) 10%,var(--card)); color: var(--accent); font-size: 10px; font-style: normal; font-weight: 700; letter-spacing: 0; }
+.hero-open { position: absolute; z-index: 2; inset: 0; width: 100%; border: 0; border-radius: inherit; background: transparent; }
+.hero-open:focus-visible { outline-offset: -4px; }
+button.metric-card { width: 100%; color: inherit; text-align: left; }
+.card-disclosure { position: absolute; right: 14px; bottom: 14px; color: var(--muted); opacity: .55; transition: transform .2s ease, opacity .2s ease; }
+.metric-card:active .card-disclosure { transform: translateX(2px); opacity: 1; }
+.metric-card.body-card > small { padding-right: 15px; }
+.record-anchor,.form-section[id] { scroll-margin-top: calc(env(safe-area-inset-top) + 18px); }
 .measurement-card { width: 100%; border: 1px solid var(--line); border-radius: 24px; background: var(--card); padding: 16px; color: var(--text); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 13px; text-align: left; }
 .measurement-symbol { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--card)); }
 .measurement-card > span:nth-child(2) { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
 .measurement-card small,.measurement-card em { color: var(--muted); font-size: 9px; font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .measurement-card strong { font-family: Iowan Old Style, serif; font-size: 22px; }
+.recent-entry-presets { display: flex; flex-direction: column; gap: 7px; margin-bottom: 2px; }
+.recent-entry-presets > span { padding-left: 3px; color: var(--muted); font-size: 10px; letter-spacing: .06em; }
+.recent-entry-presets > div { display: flex; gap: 7px; overflow-x: auto; margin: 0 -2px; padding: 1px 2px 5px; scrollbar-width: none; scroll-snap-type: x proximity; }
+.recent-entry-presets > div::-webkit-scrollbar { display: none; }
+.recent-entry-presets button { flex: 0 0 auto; min-width: 116px; max-width: 170px; min-height: 52px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 14px; background: var(--card-2); display: flex; flex-direction: column; justify-content: center; gap: 3px; text-align: left; scroll-snap-align: start; }
+.recent-entry-presets strong { max-width: 145px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.recent-entry-presets small { color: var(--muted); font-size: 10px; white-space: nowrap; }
+.backup-reminder { min-height: 42px; margin: 8px 3px 0; padding: 0 11px; border-radius: 14px; background: color-mix(in srgb,#c89443 11%,var(--card)); color: color-mix(in srgb,#9a671b 82%,var(--text)); display: flex; align-items: center; gap: 7px; font-size: 10px; }
+.backup-reminder button { min-height: 38px; margin-left: auto; padding: 0 7px; border: 0; background: transparent; color: inherit; font-size: 10px; font-weight: 750; }
 .sheet-handle { width: 38px; height: 4px; border-radius: 999px; background: var(--line); margin: -10px auto 12px; }
 .form-error { margin: 0 4px; color: #cf5b44; font-size: 11px; }
 .date-stepper.compact { margin: 4px 0 10px; }
@@ -135,3 +151,17 @@ button:not(:disabled):active { transform: scale(.965); }
   .ambient { transform: none!important; }
   .modal-sheet { transform: translateY(var(--sheet-drag)); }
 }
+
+/* Readability and failure states for long-term daily use. */
+.trend-count span,.section-heading span,.activity-levels button small,.energy-summary span,.intake-summary span,
+.steps-card .input-row > span:first-child small,.daily-breakdown span,.quick-add-grid small,
+.measurement-card small,.measurement-card em,.calendar-shortcut span { font-size: 10px; }
+.energy-summary span { opacity: .62; }
+.metric-picker { padding-right: 44px; mask-image: linear-gradient(to right,#000 0,#000 calc(100% - 28px),transparent); -webkit-mask-image: linear-gradient(to right,#000 0,#000 calc(100% - 28px),transparent); }
+.icon-button:disabled,.calendar-grid button:disabled { cursor: default; opacity: .2; transform: none; }
+.calendar-grid button:disabled::after { display: none; }
+.loading-card.error-card { display: grid; place-items: center; gap: 12px; }
+.loading-card.error-card p { margin: 0; }
+.loading-card.error-card button,.app-error button { min-width: 96px; min-height: 44px; border: 0; border-radius: 14px; background: var(--accent); color: #fff; font-weight: 700; }
+.app-error { padding: 24px; text-align: center; }
+.app-error strong { font: 700 20px/1.3 Iowan Old Style,"Songti SC",serif; }

@@ -11,4 +11,9 @@ describe('backup import compatibility', () => {
   it('rejects malformed item lists', () => expect(() => parseBackup(JSON.stringify({ version: 2, records: [{ ...base, foodEntries: [{ name: '午餐' }] }] }))).toThrow('膳食单项格式无效'))
   it('accepts version 3 steps and included-in-steps activity metadata', () => expect(parseBackup(JSON.stringify({ version: 3, records: [{ ...base, stepCount: 8500.5, activityEntries: [{ id:'a',name:'跑步',calories:300,includedInSteps:true }] }] }))[0]).toMatchObject({stepCount:8500.5}))
   it('rejects invalid step counts', () => expect(() => parseBackup(JSON.stringify({ version: 3, records: [{ ...base, stepCount: -1 }] }))).toThrow('步数无效'))
+  it('rejects impossible body measurements', () => expect(() => parseBackup(JSON.stringify({ version: 3, records: [{ ...base, weightKg: 0 }] }))).toThrow('体重无效'))
+  it('rejects invalid dates and non-finite nutrition values', () => {
+    expect(() => parseBackup(JSON.stringify({ version: 3, records: [{ ...base, date: '2026-02-31' }] }))).toThrow('缺少必要字段')
+    expect(() => parseBackup(JSON.stringify({ version: 3, records: [{ ...base, proteinGrams: -1 }] }))).toThrow('蛋白质无效')
+  })
 })

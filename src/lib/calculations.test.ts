@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateBMI, calculateCalorieDeficit, calculateTotalCalories, estimateDailyActivityCalories, estimateRestingCalories, estimateStepCaloriesAdjustment, getDailyActivityCalories, getExerciseCalories, getFoodCalories } from './calculations'
+import { calculateBMI, calculateCalorieDeficit, calculateTotalCalories, estimateDailyActivityCalories, estimateRestingCalories, getDailyActivityCalories, getExerciseCalories, getFoodCalories } from './calculations'
 
 describe('health calculations', () => {
   it('calculates BMI from metric values', () => expect(calculateBMI(75, 175)).toBeCloseTo(24.49, 2))
@@ -16,19 +16,15 @@ describe('health calculations', () => {
   })
   it('treats an explicitly empty food list as not yet logged', () => expect(getFoodCalories({ foodCalories: 500, foodEntries: [] })).toBeUndefined())
   it('keeps the activity level estimate unchanged without steps', () => expect(getDailyActivityCalories({ restingCalories: 1600, activityLevel: 'sedentary', weightKg: 70 })).toBe(320))
-  it('only adjusts the step difference from the level baseline', () => {
+  it('keeps steps informational without changing daily activity energy', () => {
     const record = { restingCalories: 1600, activityLevel: 'sedentary' as const, weightKg: 70, stepCount: 8500 }
-    expect(estimateStepCaloriesAdjustment(record)).toBe(128)
-    expect(getDailyActivityCalories(record)).toBe(448)
+    expect(getDailyActivityCalories(record)).toBe(320)
+    expect(calculateCalorieDeficit({ ...record, foodCalories: 1800 })).toBe(120)
   })
-  it('caps unusually high and low step adjustments', () => {
-    expect(estimateStepCaloriesAdjustment({ restingCalories: 1600, activityLevel: 'sedentary', weightKg: 70, stepCount: 100000 })).toBe(128)
-    expect(estimateStepCaloriesAdjustment({ restingCalories: 1600, activityLevel: 'sedentary', weightKg: 70, stepCount: 0 })).toBe(-80)
-  })
-  it('does not double count step-based exercise when steps are present', () => {
+  it('always counts explicitly logged exercise even when steps are present', () => {
     const activityEntries = [{ id: 'walk', name: '跑步', calories: 300, includedInSteps: true }, { id: 'lift', name: '力量训练', calories: 200 }]
     expect(getExerciseCalories({ activityEntries })).toBe(500)
-    expect(getExerciseCalories({ activityEntries, stepCount: 10000 })).toBe(200)
+    expect(getExerciseCalories({ activityEntries, stepCount: 10000 })).toBe(500)
   })
   it('closes the loop across resting, adjusted daily activity, and exercise', () => {
     expect(calculateTotalCalories({
@@ -40,6 +36,6 @@ describe('health calculations', () => {
         { id: 'run', name: '跑步', calories: 300, includedInSteps: true },
         { id: 'lift', name: '力量训练', calories: 200 },
       ],
-    })).toBe(2248)
+    })).toBe(2420)
   })
 })

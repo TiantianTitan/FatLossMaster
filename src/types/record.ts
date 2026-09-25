@@ -43,3 +43,5 @@ export interface DailyRecord {
 export type NumericRecordKey = 'heightCm' | 'weightKg' | 'waistCm' | 'ageYears' | 'sleepHours' | 'stepCount' | 'restingCalories' | 'dailyCalories' | 'exerciseCalories' | 'foodCalories' | 'proteinGrams'
 export type ThemeMode = 'system' | 'light' | 'dark'
 export type Page = 'today' | 'records' | 'trends' | 'settings'
+export type RecordSection = 'summary' | 'activity' | 'food' | 'resting' | 'daily' | 'sleep' | 'notes'
+export type DetailMetric = 'deficit' | 'protein' | 'weight' | 'exercise' | 'sleep' | 'steps' | 'daily'

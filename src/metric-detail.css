@@ -1,0 +1,48 @@
+.metric-detail-page { padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+.detail-nav { min-height: 52px; display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; margin: 0 0 18px; }
+.detail-nav button { width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: var(--card); display: grid; place-items: center; }
+.detail-nav span { text-align: center; color: var(--muted); font-size: 12px; letter-spacing: .08em; }
+.detail-nav i { width: 44px; }
+.detail-hero { position: relative; min-height: 250px; overflow: hidden; border-radius: 30px; padding: 28px 26px; background: var(--text); color: var(--bg); box-shadow: var(--shadow); }
+.detail-hero::after { content: ""; position: absolute; width: 210px; height: 210px; border: 1px solid currentColor; border-radius: 50%; right: -72px; top: -92px; opacity: .11; }
+.detail-hero-icon { width: 46px; height: 46px; border-radius: 16px; display: grid; place-items: center; background: color-mix(in srgb,var(--accent) 88%,white); color: white; }
+.detail-hero p { margin: 33px 0 5px; color: inherit; opacity: .58; font-size: 11px; letter-spacing: .1em; }
+.detail-hero > strong { display: block; font: 700 54px/1.05 Iowan Old Style,serif; letter-spacing: -2px; }
+.detail-hero > strong small { font: 500 13px/1 "Avenir Next",sans-serif; letter-spacing: 0; opacity: .56; }
+.detail-hero h1 { margin: 14px 0 0; font: 700 24px/1 Iowan Old Style,"Songti SC",serif; }
+.detail-protein { background: var(--lime); color: #252a1e; }
+.detail-protein .detail-hero-icon { background: #5b682f; }
+.detail-sleep { background: color-mix(in srgb,#53678f 80%,var(--text)); color: white; }
+.detail-weight { background: color-mix(in srgb,var(--card) 93%,var(--accent)); color: var(--text); border: 1px solid var(--line); }
+.detail-facts { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-top: 12px; }
+.detail-facts > div { min-height: 78px; padding: 15px 16px; border: 1px solid var(--line); border-radius: 20px; background: var(--card); display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
+.detail-facts span { color: var(--muted); font-size: 10px; letter-spacing: .04em; }
+.detail-facts strong { font: 700 20px/1.15 Iowan Old Style,serif; }
+.detail-facts strong small { color: var(--muted); font: 500 9px/1 "Avenir Next",sans-serif; }
+.detail-edit-button { width: 100%; min-height: 54px; margin: 12px 0 22px; border: 0; border-radius: 18px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 750; box-shadow: 0 12px 24px color-mix(in srgb,var(--accent) 22%,transparent); }
+.detail-history-card,.detail-list { margin-top: 14px; padding: 20px; border: 1px solid var(--line); border-radius: 26px; background: var(--card); }
+.detail-section-head { display: flex; align-items: flex-end; justify-content: space-between; }
+.detail-section-head span { color: var(--muted); font-size: 9px; letter-spacing: .1em; }
+.detail-section-head h2 { margin: 3px 0 0; font: 700 22px/1.1 Iowan Old Style,"Songti SC",serif; }
+.detail-section-head em { color: var(--muted); font-size: 10px; font-style: normal; }
+.detail-sparkline { width: 100%; height: 112px; margin-top: 12px; overflow: visible; }
+.detail-sparkline polyline { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.detail-sparkline circle { fill: var(--accent); stroke: var(--card); stroke-width: 4; vector-effect: non-scaling-stroke; }
+.detail-chart-empty { height: 112px; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 11px; }
+.detail-chart-empty span { width: 38px; border-top: 2px dashed var(--line); }
+.detail-history-card.compact { padding-top: 16px; padding-bottom: 13px; }
+.detail-history-card.compact .detail-chart-empty { height: 36px; justify-content: flex-start; }
+.detail-history-card.compact .detail-section-head h2 { font-size: 19px; }
+.detail-list { padding-bottom: 8px; }
+.detail-list-row { min-height: 58px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.detail-list-row:last-child { border-bottom: 0; }
+.detail-list-row > span { color: var(--muted); font-size: 12px; }
+.detail-list-row strong { font: 700 18px/1 Iowan Old Style,serif; }
+.detail-list-row strong small { color: var(--muted); font: 500 9px/1 "Avenir Next",sans-serif; }
+.detail-list-empty { padding: 34px 0 27px; text-align: center; color: var(--muted); font-size: 11px; }
+@media(max-width:370px) {
+  .detail-hero { min-height: 230px; padding: 24px 22px; }
+  .detail-hero > strong { font-size: 46px; }
+  .detail-facts > div { padding: 13px; }
+}
+.detail-section-head span { font-size: 10px; }

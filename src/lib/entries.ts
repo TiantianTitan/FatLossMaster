@@ -14,3 +14,24 @@ export const activityEntryPatch = (entries: ActivityEntry[]): Partial<DailyRecor
   activityEntries: entries,
   exerciseCalories: entries.reduce((sum, item) => sum + item.calories, 0),
 })
+
+const recentEntries = <T extends FoodEntry | ActivityEntry>(records: DailyRecord[], pick: (record: DailyRecord) => T[], limit: number) => {
+  const result:T[]=[]
+  const seen=new Set<string>()
+  const sorted=[...records].sort((a,b)=>b.date.localeCompare(a.date)||b.updatedAt.localeCompare(a.updatedAt))
+  for(const record of sorted){
+    const entries=pick(record)
+    for(let index=entries.length-1;index>=0;index-=1){
+      const entry=entries[index],name=entry.name.trim()
+      if(entry.id.startsWith('legacy-')||name==='快速记录'||name==='运动记录')continue
+      const key=name.toLocaleLowerCase()
+      if(seen.has(key))continue
+      seen.add(key);result.push(entry)
+      if(result.length===limit)return result
+    }
+  }
+  return result
+}
+
+export const recentFoodEntriesFor = (records: DailyRecord[], limit=5) => recentEntries(records, foodEntriesFor, limit)
+export const recentActivityEntriesFor = (records: DailyRecord[], limit=5) => recentEntries(records, activityEntriesFor, limit)
