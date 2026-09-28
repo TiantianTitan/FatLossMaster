@@ -2,7 +2,7 @@ import type { DailyRecord } from '../types/record'
 
 export const parseBackup = (text: string): DailyRecord[] => {
   const data: unknown = JSON.parse(text)
-  if (!data || typeof data !== 'object' || !('version' in data) || !('records' in data) || ![1, 2].includes(Number(data.version)) || !Array.isArray(data.records)) throw new Error('不是有效的轻衡备份文件')
+  if (!data || typeof data !== 'object' || !('version' in data) || !('records' in data) || ![1, 2].includes(Number(data.version)) || !Array.isArray(data.records)) throw new Error('不是有效的天天减脂备份文件')
   const dates = new Set<string>()
   return data.records.map((item: unknown) => {
     if (!item || typeof item !== 'object') throw new Error('备份中包含无效记录')

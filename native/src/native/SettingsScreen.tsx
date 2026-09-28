@@ -41,7 +41,7 @@ export function SettingsScreen({ records, profile, theme, onTheme, onProfile, on
     <Text style={[styles.sectionLabel, { color: colors.muted }]}>数据管理</Text><Card colors={colors} style={{ paddingVertical: 0 }}><ActionRow icon="download-outline" title="导出 CSV" detail="用于表格分析" onPress={() => run(() => shareCSV(records))} colors={colors}/><ActionRow icon="document-text-outline" title="导出 JSON" detail="完整、安全备份" onPress={() => run(() => shareJSON(records))} colors={colors}/><ActionRow icon="refresh-outline" title="从 JSON 恢复" detail="合并或覆盖本机数据" onPress={restore} colors={colors}/><ActionRow icon="trash-outline" title="清空所有数据" detail="需要两次确认" onPress={clear} colors={colors} destructive/></Card>
 
     <View style={[styles.privacy, { backgroundColor: colors.accentSoft }]}><Ionicons name="lock-closed" size={24} color={colors.accent}/><View style={{ flex: 1 }}><Text style={[styles.privacyTitle, { color: colors.text }]}>你的数据，只属于你</Text><Text style={[styles.privacyCopy, { color: colors.muted }]}>记录保存在此 App 的本机空间，不会自动上传服务器。更新 App 不会清除数据，但卸载 App 会；请定期导出 JSON。</Text></View></View>
-    <Text style={[styles.version, { color: colors.muted }]}>轻衡 2.0 · Expo 原生版</Text>
+    <Text style={[styles.version, { color: colors.muted }]}>天天减脂 2.0 · Expo 原生版</Text>
     <ProfileSheet visible={editing} value={profile} onClose={() => setEditing(false)} onSave={next => { onProfile(next); setEditing(false) }} colors={colors}/>
   </Screen>
 }

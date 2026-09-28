@@ -58,7 +58,7 @@ function HealthApp() {
   const setTheme = (mode: ThemeMode) => { setThemeState(mode); void storeTheme(mode) }
   const merge = (incoming: DailyRecord[]) => { const byDate = new Map(records.map(record => [record.date, record])); incoming.forEach(record => { const existing = byDate.get(record.date); byDate.set(record.date, { ...record, id: existing?.id ?? record.id }) }); commit([...byDate.values()]) }
 
-  if (!loaded) return <View style={[styles.loader, { backgroundColor: colors.background }]}><View style={[styles.loaderMark, { backgroundColor: colors.text }]}><Text style={[styles.loaderGlyph, { color: colors.lime }]}>轻</Text></View><ActivityIndicator color={colors.accent}/><Text style={[styles.loaderText, { color: colors.muted }]}>正在打开轻衡</Text></View>
+  if (!loaded) return <View style={[styles.loader, { backgroundColor: colors.background }]}><View style={[styles.loaderMark, { backgroundColor: colors.text }]}><Text style={[styles.loaderGlyph, { color: colors.lime }]}>天</Text></View><ActivityIndicator color={colors.accent}/><Text style={[styles.loaderText, { color: colors.muted }]}>正在打开天天减脂</Text></View>
 
   return <View style={[styles.root, { backgroundColor: colors.background }]}><StatusBar style={isDark ? 'light' : 'dark'}/>
     {page === 'today' ? <HomeScreen record={virtualToday} profile={profile} onAddFood={addFood} onAddActivity={addActivity} onOpenRecord={() => { setRecordDate(todayKey()); setPage('records') }} colors={colors}/> : null}

@@ -6,7 +6,7 @@ import { calculateCalorieDeficit, calculateTotalCalories, getExerciseCalories, g
 import { parseBackup } from '../lib/import'
 
 const csvCell = (value: unknown) => `"${String(value ?? '').replaceAll('"', '""')}"`
-const filename = (extension: string) => `轻衡备份-${new Date().toISOString().slice(0, 10)}.${extension}`
+const filename = (extension: string) => `天天减脂备份-${new Date().toISOString().slice(0, 10)}.${extension}`
 
 async function shareText(name: string, content: string, mimeType: string) {
   if (!FileSystem.cacheDirectory) throw new Error('无法访问临时目录')
