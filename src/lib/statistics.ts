@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, endOfDay, format, isWithinInterval, parseISO, startOfDay, startOfMonth, startOfWeek, subDays } from 'date-fns'
+import { differenceInCalendarDays, endOfDay, format, isWithinInterval, parseISO, startOfDay, startOfMonth, subDays } from 'date-fns'
 import type { DailyRecord } from '../types/record'
 import { calculateCalorieDeficit, getExerciseCalories, getFoodCalories, getProteinGrams } from './calculations'
 
@@ -39,7 +39,7 @@ const periodStats = (records: DailyRecord[], start: Date, end: Date): PeriodStat
 
 const lastCompletedDay = (date: Date) => endOfDay(subDays(startOfDay(date), 1))
 
-export const calculateWeeklyStats = (records: DailyRecord[], date = new Date()) => periodStats(records, startOfWeek(date, { weekStartsOn: 1 }), lastCompletedDay(date))
+export const calculateLastSevenDaysStats = (records: DailyRecord[], date = new Date()) => periodStats(records, startOfDay(subDays(date,7)), lastCompletedDay(date))
 export const calculateMonthlyStats = (records: DailyRecord[], date = new Date()) => periodStats(records, startOfMonth(date), lastCompletedDay(date))
 
 export const recordsInDayRange = (records: DailyRecord[], days: number, date = new Date()) => {

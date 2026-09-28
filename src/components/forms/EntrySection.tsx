@@ -1,5 +1,5 @@
 import { Pencil, Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ActivityEntry, FoodEntry } from '../../types/record'
 import { Modal } from '../ui/Modal'
 import { parseDecimal } from '../../lib/numbers'
@@ -11,14 +11,17 @@ export function EntrySection({ kind, entries, recentEntries=[], onChange }: { ki
   const [editing, setEditing] = useState<Entry | null | undefined>(undefined)
   const [editorVersion, setEditorVersion] = useState(0)
   const [changeError,setChangeError]=useState('')
+  const sectionRef=useRef<HTMLElement>(null),restoreAfterSave=useRef(false)
   const isFood = kind === 'food'
+  useEffect(()=>{if(editing!==undefined||!restoreAfterSave.current)return;restoreAfterSave.current=false;let timer=0;const frame=requestAnimationFrame(()=>{timer=window.setTimeout(()=>sectionRef.current?.closest<HTMLElement>('.record-anchor')?.scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}),320)});return()=>{cancelAnimationFrame(frame);window.clearTimeout(timer)}},[editing])
   const save = async(entry: Entry) => {
+    const wasAdding=editing===null
     const next = editing ? entries.map(item => item.id === editing.id ? entry : item) : [...entries, entry]
-    const saved=await onChange(next);if(saved){setChangeError('');setEditing(undefined)}return saved
+    const saved=await onChange(next);if(saved){setChangeError('');restoreAfterSave.current=wasAdding;setEditing(undefined)}return saved
   }
   const saveAndContinue = async(entry: Entry) => { const saved=await onChange([...entries, entry]);if(saved){setChangeError('');setEditorVersion(version => version + 1)}return saved }
   const remove=async(entry:Entry)=>{const saved=await onChange(entries.filter(item=>item.id!==entry.id));setChangeError(saved?'':'删除失败，请重试')}
-  return <section className="form-section entry-section">
+  return <section ref={sectionRef} className="form-section entry-section">
     <div className="form-title-row"><h2>{isFood ? '膳食记录' : '运动记录'}</h2><button onClick={() => setEditing(null)}><Plus size={15}/>{isFood ? '添加膳食' : '添加运动'}</button></div>
     <div className="entry-card">
       {entries.length === 0 ? <button className="entry-empty" onClick={() => setEditing(null)}><Plus size={20}/><span>{isFood ? '添加今天吃过的食物或餐点' : '添加健身、跑步等额外消耗'}</span></button> : entries.map(entry => <div className="entry-row" key={entry.id}>

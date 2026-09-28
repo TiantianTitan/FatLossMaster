@@ -34,12 +34,14 @@ const displayValue = (metric:DetailMetric,value:number) => metric==='deficit'
   ? `${value>=0?'缺口':'盈余'} ${numberText(Math.abs(value))}`
   : numberText(value)
 
-function Sparkline({values}:{values:number[]}) {
-  if(values.length<2)return <div className="detail-chart-empty"><span/>再记录 {2-values.length} 条即可查看趋势</div>
-  const min=Math.min(...values),max=Math.max(...values),range=max-min||1
-  const points=values.map((value,index)=>`${8+index*(304/(values.length-1))},${82-((value-min)/range)*68}`).join(' ')
-  const last=points.split(' ').at(-1)!.split(',')
-  return <svg className="detail-sparkline" viewBox="0 0 320 96" role="img" aria-label="近期趋势"><polyline points={points}/><circle cx={last[0]} cy={last[1]} r="5"/></svg>
+function Sparkline({items,metric,unit}:{items:Array<{date:string;value:number}>;metric:DetailMetric;unit:string}) {
+  const [selectedDate,setSelectedDate]=useState(items.at(-1)?.date)
+  if(items.length<2)return <div className="detail-chart-empty"><span/>再记录 {2-items.length} 条即可查看趋势</div>
+  const values=items.map(item=>item.value),min=Math.min(...values),max=Math.max(...values),range=max-min||1
+  const points=items.map((item,index)=>({item,x:8+index*(304/(items.length-1)),y:82-((item.value-min)/range)*68}))
+  const selected=items.find(item=>item.date===selectedDate)??items.at(-1)!
+  const select=(date:string)=>setSelectedDate(date)
+  return <div className="detail-interactive-chart"><div className="detail-node-info" aria-live="polite"><span>{relativeDateTitle(selected.date)}</span><strong>{displayValue(metric,selected.value)} <small>{metric==='deficit'?'kcal':unit}</small></strong></div><svg className="detail-sparkline" viewBox="0 0 320 96" role="img" aria-label="近期趋势"><polyline points={points.map(point=>`${point.x},${point.y}`).join(' ')}/>{points.map(({item,x,y})=><g key={item.date} className={item.date===selected.date?'selected':''}><circle className="detail-visible-dot" cx={x} cy={y} r="4"/><circle className="detail-hit-dot" cx={x} cy={y} r="14" role="button" tabIndex={0} aria-label={`${relativeDateTitle(item.date)}，${displayValue(metric,item.value)} ${metric==='deficit'?'kcal':unit}`} onClick={()=>select(item.date)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();select(item.date)}}}/></g>)}</svg></div>
 }
 
 export function MetricDetailPage({metric,record,records,bodyDefaults,onBack,onEdit,onUpdateBody}:{metric:DetailMetric;record:DailyRecord;records:DailyRecord[];bodyDefaults:BodyProfile;onBack:()=>void;onEdit:(section:RecordSection)=>void;onUpdateBody:(body:BodyProfile)=>Promise<void>}) {
@@ -47,8 +49,8 @@ export function MetricDetailPage({metric,record,records,bodyDefaults,onBack,onEd
   const meta=detailMeta[metric],Icon=meta.icon
   const current=metric==='weight'?bodyDefaults.weightKg:metricValue(metric,record)
   const history=useMemo(()=>[...records].filter(item=>item.date<=todayKey()).sort((a,b)=>b.date.localeCompare(a.date)).map(item=>({date:item.date,value:metricValue(metric,item,true)})).filter((item):item is {date:string;value:number}=>item.value!=null).slice(0,8),[metric,records])
-  const chartValues=[...history].reverse().map(item=>item.value)
-  const hasTrend=chartValues.length>=2
+  const chartItems=[...history].reverse()
+  const hasTrend=chartItems.length>=2
   const foodEntries=foodEntriesFor(record),activityEntries=activityEntriesFor(record)
   const activityName=activityLevels.find(level=>level.id===(record.activityLevel??'sedentary'))?.name??'静坐办公'
   const facts = metric==='deficit' ? [
@@ -70,7 +72,7 @@ export function MetricDetailPage({metric,record,records,bodyDefaults,onBack,onEd
     <section className={`detail-hero detail-${metric}`}><div className="detail-hero-icon"><Icon size={22}/></div><p>{heroLabel}</p><strong>{current==null?'—':metric==='deficit'?numberText(Math.abs(current)):numberText(current)} <small>{current!=null&&meta.unit}</small></strong><h1>{meta.title}</h1></section>
     {facts.length>0&&<section className="detail-facts" aria-label="今日数据">{facts.map(([label,value,unit])=><div key={label}><span>{label}</span><strong>{typeof value==='number'?numberText(value):value??'—'} <small>{value!=null&&unit}</small></strong></div>)}</section>}
     <button type="button" className="detail-edit-button" onClick={()=>metric==='weight'?setEditingBody(true):onEdit(meta.section)}><Pencil size={17}/>{metric==='weight'?'编辑身体资料':'编辑今日记录'}</button>
-    <section className={`detail-history-card ${hasTrend?'':'compact'}`}><div className="detail-section-head"><div><span>最近 {history.length} 条记录</span><h2>近期变化</h2></div><em>{hasTrend?meta.unit:`${history.length}/2`}</em></div><Sparkline values={chartValues}/></section>
+    <section className={`detail-history-card ${hasTrend?'':'compact'}`}><div className="detail-section-head"><div><span>最近 {history.length} 条记录</span><h2>近期变化</h2></div><em>{hasTrend?meta.unit:`${history.length}/2`}</em></div><Sparkline items={chartItems} metric={metric} unit={meta.unit}/></section>
     <section className="detail-list"><div className="detail-section-head"><div><span>按日期</span><h2>记录</h2></div></div>{history.length===0?<div className="detail-list-empty">暂无历史记录</div>:history.map(item=><div className="detail-list-row" key={item.date}><span>{relativeDateTitle(item.date)}</span><strong>{displayValue(metric,item.value)} <small>{metric==='deficit'?'kcal':meta.unit}</small></strong></div>)}</section>
     {editingBody&&<BodyEditor value={bodyDefaults} onClose={()=>setEditingBody(false)} onSave={async body=>{await onUpdateBody(body);setEditingBody(false)}}/>}
   </main>

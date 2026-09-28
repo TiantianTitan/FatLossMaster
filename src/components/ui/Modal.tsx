@@ -1,15 +1,18 @@
 import { X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+
+const currentViewportStyle=():React.CSSProperties|undefined=>{const viewport=window.visualViewport;return viewport?{top:`${Math.round(viewport.offsetTop)}px`,height:`${Math.round(viewport.height)}px`,bottom:'auto'}:undefined}
+
 export function Modal({ title, children, onClose, dismissible=true }: { title: string; children: React.ReactNode; onClose: () => void; dismissible?: boolean }) {
   const closeRef=useRef(onClose)
   const dragStart=useRef<{y:number;time:number}|null>(null)
   const [closing,setClosing]=useState(false),[dragY,setDragY]=useState(0),[dragging,setDragging]=useState(false)
-  const [viewportStyle,setViewportStyle]=useState<React.CSSProperties>()
+  const [viewportStyle,setViewportStyle]=useState<React.CSSProperties|undefined>(currentViewportStyle)
   useEffect(()=>{closeRef.current=onClose},[onClose])
   const requestClose=useCallback(()=>{if(dismissible&&!closing)setClosing(true)},[dismissible,closing])
   useEffect(()=>{const previous=document.body.style.overflow;document.body.style.overflow='hidden';const close=(event:KeyboardEvent)=>event.key==='Escape'&&requestClose();window.addEventListener('keydown',close);return()=>{document.body.style.overflow=previous;window.removeEventListener('keydown',close)}},[requestClose])
-  useEffect(()=>{const viewport=window.visualViewport;if(!viewport)return;let frame=0;const sync=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>setViewportStyle({top:`${Math.round(viewport.offsetTop)}px`,height:`${Math.round(viewport.height)}px`,bottom:'auto'}))};sync();viewport.addEventListener('resize',sync);viewport.addEventListener('scroll',sync);return()=>{cancelAnimationFrame(frame);viewport.removeEventListener('resize',sync);viewport.removeEventListener('scroll',sync)}},[])
+  useEffect(()=>{const viewport=window.visualViewport;if(!viewport)return;let frame=0;const sync=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{const next=currentViewportStyle();setViewportStyle(previous=>previous?.top===next?.top&&previous?.height===next?.height?previous:next)})};sync();viewport.addEventListener('resize',sync);viewport.addEventListener('scroll',sync);return()=>{cancelAnimationFrame(frame);viewport.removeEventListener('resize',sync);viewport.removeEventListener('scroll',sync)}},[])
   useEffect(()=>{if(!closing)return;const timer=window.setTimeout(()=>closeRef.current(),220);return()=>window.clearTimeout(timer)},[closing])
   const startDrag=(event:React.PointerEvent)=>{if(!dismissible)return;dragStart.current={y:event.clientY,time:performance.now()};setDragging(true);event.currentTarget.setPointerCapture(event.pointerId)}
   const moveDrag=(event:React.PointerEvent)=>{if(!dragStart.current)return;setDragY(Math.max(0,event.clientY-dragStart.current.y))}

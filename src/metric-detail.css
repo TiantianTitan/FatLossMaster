@@ -25,9 +25,17 @@
 .detail-section-head span { color: var(--muted); font-size: 9px; letter-spacing: .1em; }
 .detail-section-head h2 { margin: 3px 0 0; font: 700 22px/1.1 Iowan Old Style,"Songti SC",serif; }
 .detail-section-head em { color: var(--muted); font-size: 10px; font-style: normal; }
-.detail-sparkline { width: 100%; height: 112px; margin-top: 12px; overflow: visible; }
+.detail-interactive-chart { margin-top: 12px; }
+.detail-node-info { min-height: 34px; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; }
+.detail-node-info > span { color: var(--muted); font-size: 11px; }
+.detail-node-info > strong { font: 700 17px/1 Iowan Old Style,serif; }
+.detail-node-info small { color: var(--muted); font: 500 10px/1 "Avenir Next",sans-serif; }
+.detail-sparkline { width: 100%; height: 96px; overflow: visible; }
 .detail-sparkline polyline { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-.detail-sparkline circle { fill: var(--accent); stroke: var(--card); stroke-width: 4; vector-effect: non-scaling-stroke; }
+.detail-visible-dot { fill: var(--card); stroke: var(--accent); stroke-width: 2.5; vector-effect: non-scaling-stroke; pointer-events: none; }
+.detail-hit-dot { fill: transparent; cursor: pointer; outline: none; }
+.detail-sparkline g.selected .detail-visible-dot { fill: var(--accent); stroke: var(--card); stroke-width: 4; }
+.detail-hit-dot:focus-visible { stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .detail-chart-empty { height: 112px; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 11px; }
 .detail-chart-empty span { width: 38px; border-top: 2px dashed var(--line); }
 .detail-history-card.compact { padding-top: 16px; padding-bottom: 13px; }
