@@ -16,6 +16,10 @@ export type ActivityLevel = 'sedentary' | 'standing' | 'walking' | 'physical'
 export type Sex = 'male' | 'female'
 export type BodyProfile = Pick<DailyRecord, 'heightCm' | 'weightKg' | 'waistCm' | 'ageYears' | 'sex'>
 
+export interface AppPreferences {
+  proteinTargetGrams?: number
+}
+
 export interface DailyRecord {
   id: string
   date: string

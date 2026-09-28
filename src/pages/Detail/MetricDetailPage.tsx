@@ -44,7 +44,7 @@ function Sparkline({items,metric,unit}:{items:Array<{date:string;value:number}>;
   return <div className="detail-interactive-chart"><div className="detail-node-info" aria-live="polite"><span>{relativeDateTitle(selected.date)}</span><strong>{displayValue(metric,selected.value)} <small>{metric==='deficit'?'kcal':unit}</small></strong></div><svg className="detail-sparkline" viewBox="0 0 320 96" role="img" aria-label="近期趋势"><polyline points={points.map(point=>`${point.x},${point.y}`).join(' ')}/>{points.map(({item,x,y})=><g key={item.date} className={item.date===selected.date?'selected':''}><circle className="detail-visible-dot" cx={x} cy={y} r="4"/><circle className="detail-hit-dot" cx={x} cy={y} r="14" role="button" tabIndex={0} aria-label={`${relativeDateTitle(item.date)}，${displayValue(metric,item.value)} ${metric==='deficit'?'kcal':unit}`} onClick={()=>select(item.date)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();select(item.date)}}}/></g>)}</svg></div>
 }
 
-export function MetricDetailPage({metric,record,records,bodyDefaults,onBack,onEdit,onUpdateBody}:{metric:DetailMetric;record:DailyRecord;records:DailyRecord[];bodyDefaults:BodyProfile;onBack:()=>void;onEdit:(section:RecordSection)=>void;onUpdateBody:(body:BodyProfile)=>Promise<void>}) {
+export function MetricDetailPage({metric,record,records,bodyDefaults,proteinTargetGrams,onBack,onEdit,onUpdateBody}:{metric:DetailMetric;record:DailyRecord;records:DailyRecord[];bodyDefaults:BodyProfile;proteinTargetGrams?:number;onBack:()=>void;onEdit:(section:RecordSection)=>void;onUpdateBody:(body:BodyProfile)=>Promise<void>}) {
   const [editingBody,setEditingBody]=useState(false)
   const meta=detailMeta[metric],Icon=meta.icon
   const current=metric==='weight'?bodyDefaults.weightKg:metricValue(metric,record)
@@ -52,11 +52,12 @@ export function MetricDetailPage({metric,record,records,bodyDefaults,onBack,onEd
   const chartItems=[...history].reverse()
   const hasTrend=chartItems.length>=2
   const foodEntries=foodEntriesFor(record),activityEntries=activityEntriesFor(record)
+  const protein=getProteinGrams(record),proteinPercent=proteinTargetGrams&&protein!=null?Math.round(protein/proteinTargetGrams*100):undefined
   const activityName=activityLevels.find(level=>level.id===(record.activityLevel??'sedentary'))?.name??'静坐办公'
   const facts = metric==='deficit' ? [
     ['摄入',getFoodCalories(record), 'kcal'],['静息',record.restingCalories,'kcal'],['日常',getDailyActivityCalories(record),'kcal'],['运动',getExerciseCalories(record),'kcal'],
   ] : metric==='protein' ? [
-    ['膳食记录',foodEntries.length,'项'],['今日摄入',getFoodCalories(record),'kcal'],
+    ['每日目标',proteinTargetGrams,'g'],['完成度',proteinPercent==null?'—':`${proteinPercent}%`,''],['膳食记录',foodEntries.length,'项'],['今日摄入',getFoodCalories(record),'kcal'],
   ] : metric==='weight' ? [
     ['身高',bodyDefaults.heightCm,'cm'],['BMI',calculateBMI(bodyDefaults.weightKg,bodyDefaults.heightCm), ''],['腰围',bodyDefaults.waistCm,'cm'],
   ] : metric==='exercise' ? [

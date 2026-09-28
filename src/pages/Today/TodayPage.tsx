@@ -9,10 +9,11 @@ import { recentActivityEntriesFor, recentFoodEntriesFor } from '../../lib/entrie
 
 const Value = ({ value, unit }: { value?: number; unit: string }) => <strong>{value == null ? '—' : value.toLocaleString()} {value != null && <small>{unit}</small>}</strong>
 
-export function TodayPage({ record, records, hasRecord, bodyDefaults, onQuickAddFood, onQuickAddActivity, onOpenRecord, onOpenDetail }: { record?: DailyRecord; records:DailyRecord[]; hasRecord:boolean; bodyDefaults: BodyProfile; onQuickAddFood: (entry:FoodEntry)=>Promise<void>; onQuickAddActivity:(entry:ActivityEntry)=>Promise<void>; onOpenRecord: () => void; onOpenDetail:(metric:DetailMetric)=>void }) {
+export function TodayPage({ record, records, hasRecord, bodyDefaults, proteinTargetGrams, onQuickAddFood, onQuickAddActivity, onOpenRecord, onOpenDetail }: { record?: DailyRecord; records:DailyRecord[]; hasRecord:boolean; bodyDefaults: BodyProfile; proteinTargetGrams?:number; onQuickAddFood: (entry:FoodEntry)=>Promise<void>; onQuickAddActivity:(entry:ActivityEntry)=>Promise<void>; onOpenRecord: () => void; onOpenDetail:(metric:DetailMetric)=>void }) {
   const [quickKind,setQuickKind]=useState<EntryKind>()
   const [message,setMessage]=useState('')
   const deficit = calculateCalorieDeficit(record), total = calculateTotalCalories(record), hasData = hasRecord
+  const protein=getProteinGrams(record),proteinPercent=proteinTargetGrams&&protein!=null?Math.round(protein/proteinTargetGrams*100):undefined
   const bodyIncomplete=bodyDefaults.heightCm==null||bodyDefaults.weightKg==null
   const saveQuick=async(entry:Entry)=>{if(quickKind==='food')await onQuickAddFood(entry as FoodEntry);else await onQuickAddActivity(entry as ActivityEntry);setMessage(quickKind==='food'?'进食已记入今天':'运动已记入今天');setQuickKind(undefined);window.setTimeout(()=>setMessage(''),1800)}
   return <main className="page today-page">
@@ -25,7 +26,7 @@ export function TodayPage({ record, records, hasRecord, bodyDefaults, onQuickAdd
     </section>
     <section className="quick-add-grid" aria-label="快速记录"><button onClick={()=>setQuickKind('food')}><span className="quick-icon food"><Utensils size={19}/></span><span><strong>记录进食</strong><small>热量与蛋白质</small></span><Plus size={18}/></button><button onClick={()=>setQuickKind('activity')}><span className="quick-icon exercise"><Dumbbell size={19}/></span><span><strong>记录运动</strong><small>额外活动消耗</small></span><Plus size={18}/></button></section>
     <section className="metric-grid">
-      <button type="button" className="metric-card accent" onClick={()=>onOpenDetail('protein')}><span>蛋白质</span><Value value={getProteinGrams(record)} unit="g"/><i>PROTEIN</i><ChevronRight className="card-disclosure" size={16}/></button>
+      <button type="button" className="metric-card accent protein-card" onClick={()=>onOpenDetail('protein')}><span>蛋白质</span><Value value={protein} unit="g"/>{proteinTargetGrams!=null&&<><small className="protein-goal-status">目标 {proteinTargetGrams.toLocaleString()} g{proteinPercent!=null&&` · ${proteinPercent}%`}</small><span className="protein-goal-track" aria-hidden="true"><b style={{width:`${Math.min(proteinPercent??0,100)}%`}}/></span></>}<i>PROTEIN</i><ChevronRight className="card-disclosure" size={16}/></button>
       <button type="button" className="metric-card body-card" onClick={()=>onOpenDetail('weight')}><span className="metric-card-title">当前体重{bodyIncomplete&&<em>待完善</em>}</span><Value value={bodyDefaults.weightKg} unit="kg"/><small>身高 {bodyDefaults.heightCm?.toLocaleString()??'—'} cm · BMI {calculateBMI(bodyDefaults.weightKg, bodyDefaults.heightCm)?.toFixed(1) ?? '—'}</small><ChevronRight className="card-disclosure" size={16}/></button>
       <button type="button" className="metric-card compact" onClick={()=>onOpenDetail('exercise')}><span className="metric-symbol"><Dumbbell size={17}/></span><span>运动</span><Value value={getExerciseCalories(record)} unit="kcal"/><ChevronRight className="card-disclosure" size={16}/></button>
       <button type="button" className="metric-card compact sleep-card" onClick={()=>onOpenDetail('sleep')}><span className="metric-symbol"><Moon size={17}/></span><span>睡眠</span><Value value={record?.sleepHours} unit="h"/><ChevronRight className="card-disclosure" size={16}/></button>

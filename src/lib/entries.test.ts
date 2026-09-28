@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { DailyRecord } from '../types/record'
-import { activityEntriesFor, activityEntryPatch, foodEntriesFor, foodEntryPatch, recentActivityEntriesFor, recentFoodEntriesFor } from './entries'
+import { activityEntriesFor, activityEntryPatch, foodEntriesFor, foodEntryPatch, recentActivityEntriesFor, recentFoodEntriesFor, removeEntryById, restoreEntryAt } from './entries'
 
 const legacy: DailyRecord = { id: '1', date: '2026-09-23', foodCalories: 2100, proteinGrams: 150, exerciseCalories: 350, createdAt: 'now', updatedAt: 'now' }
 
@@ -24,5 +24,14 @@ describe('entry migration and totals', () => {
   it('limits recent entries', () => {
     const record:DailyRecord={...legacy,foodEntries:Array.from({length:6},(_,index)=>({id:String(index),name:`食物${index}`,calories:100+index}))}
     expect(recentFoodEntriesFor([record],3).map(item=>item.name)).toEqual(['食物5','食物4','食物3'])
+  })
+  it('restores a deleted entry to its original position without duplicating it', () => {
+    const entries=[{id:'a',name:'早餐',calories:400},{id:'b',name:'午餐',calories:700},{id:'c',name:'晚餐',calories:600}]
+    const removed=removeEntryById(entries,'b')
+    expect(removed.entries.map(item=>item.id)).toEqual(['a','c'])
+    expect(removed.removed).toMatchObject({entry:{id:'b'},index:1})
+    const restored=restoreEntryAt(removed.entries,removed.removed!.entry,removed.removed!.index)
+    expect(restored.map(item=>item.id)).toEqual(['a','b','c'])
+    expect(restoreEntryAt(restored,removed.removed!.entry,1)).toBe(restored)
   })
 })

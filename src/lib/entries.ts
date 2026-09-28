@@ -15,6 +15,19 @@ export const activityEntryPatch = (entries: ActivityEntry[]): Partial<DailyRecor
   exerciseCalories: entries.reduce((sum, item) => sum + item.calories, 0),
 })
 
+export const removeEntryById = <T extends FoodEntry | ActivityEntry>(entries: T[], id: string) => {
+  const index = entries.findIndex(entry => entry.id === id)
+  if (index < 0) return { entries, removed: undefined }
+  return { entries: entries.filter(entry => entry.id !== id), removed: { entry: entries[index], index } }
+}
+
+export const restoreEntryAt = <T extends FoodEntry | ActivityEntry>(entries: T[], entry: T, index: number) => {
+  if (entries.some(item => item.id === entry.id)) return entries
+  const restored = [...entries]
+  restored.splice(Math.min(Math.max(index, 0), restored.length), 0, entry)
+  return restored
+}
+
 const recentEntries = <T extends FoodEntry | ActivityEntry>(records: DailyRecord[], pick: (record: DailyRecord) => T[], limit: number) => {
   const result:T[]=[]
   const seen=new Set<string>()

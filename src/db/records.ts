@@ -16,9 +16,18 @@ export const replaceRecords = async (records: DailyRecord[]) => {
 export const mergeRecords = async (records: DailyRecord[]) => {
   const db = await dbPromise
   const tx = db.transaction('records', 'readwrite')
+  let added = 0
+  let skipped = 0
   for (const record of records) {
     const existing = await tx.store.index('by-date').get(record.date)
-    await tx.store.put({ ...record, id: existing?.id ?? record.id })
+    if (existing) {
+      skipped += 1
+      continue
+    }
+    const idCollision = await tx.store.get(record.id)
+    await tx.store.put({ ...record, id: idCollision ? crypto.randomUUID() : record.id })
+    added += 1
   }
   await tx.done
+  return { added, skipped }
 }

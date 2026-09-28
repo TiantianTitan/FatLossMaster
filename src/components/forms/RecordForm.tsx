@@ -1,5 +1,5 @@
 import { RotateCcw } from 'lucide-react'
-import type { ActivityEntry, DailyRecord, FoodEntry } from '../../types/record'
+import type { ActivityEntry, BodyProfile, DailyRecord, FoodEntry } from '../../types/record'
 import { activityEntryPatch, activityEntriesFor, foodEntriesFor, foodEntryPatch, recentActivityEntriesFor, recentFoodEntriesFor } from '../../lib/entries'
 import { activityLevels, calculateCalorieDeficit, calculateTotalCalories, estimateDailyActivityCalories, estimateRestingCalories, getDailyActivityCalories, getExerciseCalories, getFoodCalories, getProteinGrams } from '../../lib/calculations'
 import { EntrySection } from './EntrySection'
@@ -7,20 +7,21 @@ import { DecimalInput } from '../ui/DecimalInput'
 import { DraftTextarea } from '../ui/DraftTextarea'
 import { DEFAULT_RESTING_CALORIES } from '../../lib/recordDefaults'
 
-export function RecordForm({ record, records, onUpdate }: { record: DailyRecord; records:DailyRecord[]; onUpdate: (patch: Partial<DailyRecord>) => Promise<boolean> }) {
+export function RecordForm({ record, records, bodyProfile, proteinTargetGrams, onUpdate }: { record: DailyRecord; records:DailyRecord[]; bodyProfile:BodyProfile; proteinTargetGrams?:number; onUpdate: (patch: Partial<DailyRecord>, options?:{silent?:boolean}) => Promise<boolean> }) {
   const total = calculateTotalCalories(record), deficit = calculateCalorieDeficit(record)
   const adjustedDaily = getDailyActivityCalories(record)
   const foodEntries = foodEntriesFor(record), activityEntries = activityEntriesFor(record)
+  const protein=getProteinGrams(record),proteinPercent=proteinTargetGrams&&protein!=null?Math.round(protein/proteinTargetGrams*100):undefined
   const setActivityLevel = (level: DailyRecord['activityLevel']) => onUpdate({ activityLevel: level, dailyCalories: estimateDailyActivityCalories(record.restingCalories, level) })
-  const estimatedResting=()=>estimateRestingCalories(record.weightKg,record.heightCm,record.ageYears,record.sex)??DEFAULT_RESTING_CALORIES
+  const estimatedResting=()=>estimateRestingCalories(bodyProfile.weightKg,bodyProfile.heightCm,bodyProfile.ageYears,bodyProfile.sex)??DEFAULT_RESTING_CALORIES
   const resetResting = () => { const resting = estimatedResting(); onUpdate({ restingMode: 'auto', restingCalories: resting, dailyCalories: estimateDailyActivityCalories(resting, record.activityLevel ?? 'sedentary') }) }
   return <div className="form-stack">
     <section id="record-summary" className="form-section result-section"><h2>热量缺口</h2><div className={`result-strip ${deficit != null && deficit < 0 ? 'surplus' : ''}`}><span>{deficit == null ? '等待膳食记录' : deficit >= 0 ? '热量缺口' : '热量盈余'}</span><strong>{deficit == null ? '—' : `${Math.abs(deficit).toLocaleString()} kcal`}</strong></div><div className="energy-summary"><div><span>静息</span><strong>{record.restingCalories?.toLocaleString() ?? '—'}</strong></div><b>+</b><div><span>日常</span><strong>{adjustedDaily?.toLocaleString() ?? '—'}</strong></div><b>+</b><div><span>运动</span><strong>{getExerciseCalories(record)?.toLocaleString() ?? '—'}</strong></div><b>=</b><div><span>总消耗</span><strong>{total.toLocaleString()}</strong></div></div></section>
 
-    <div id="record-activity" className="record-anchor"><EntrySection kind="activity" entries={activityEntries} recentEntries={recentActivityEntriesFor(records)} onChange={items => onUpdate(activityEntryPatch(items as ActivityEntry[]))}/></div>
+    <div id="record-activity" className="record-anchor"><EntrySection kind="activity" entries={activityEntries} recentEntries={recentActivityEntriesFor(records)} onChange={items => onUpdate(activityEntryPatch(items as ActivityEntry[]),{silent:true})}/></div>
 
-    <div id="record-food" className="record-anchor"><EntrySection kind="food" entries={foodEntries} recentEntries={recentFoodEntriesFor(records)} onChange={items => onUpdate(foodEntryPatch(items as FoodEntry[]))}/></div>
-    <div className="intake-summary"><div><span>膳食总计</span><strong>{getFoodCalories(record)?.toLocaleString() ?? '—'} kcal</strong></div><div><span>蛋白质总计</span><strong>{getProteinGrams(record)?.toLocaleString() ?? '—'} g</strong></div></div>
+    <div id="record-food" className="record-anchor"><EntrySection kind="food" entries={foodEntries} recentEntries={recentFoodEntriesFor(records)} onChange={items => onUpdate(foodEntryPatch(items as FoodEntry[]),{silent:true})}/></div>
+    <div className="intake-summary"><div><span>膳食总计</span><strong>{getFoodCalories(record)?.toLocaleString() ?? '—'} kcal</strong></div><div className="protein-summary"><span>蛋白质总计</span><strong>{protein?.toLocaleString() ?? '—'} g</strong>{proteinTargetGrams!=null&&<><small>目标 {proteinTargetGrams.toLocaleString()} g{proteinPercent!=null&&` · ${proteinPercent}%`}</small><span className="protein-summary-track" aria-hidden="true"><b style={{width:`${Math.min(proteinPercent??0,100)}%`}}/></span></>}</div></div>
 
     <section id="record-resting" className="form-section"><div className="form-title-row"><h2>静息消耗</h2><button type="button" onClick={resetResting}><RotateCcw size={14}/>恢复估算</button></div><div className="input-card"><label className="input-row"><span>全天静卧消耗</span><span className="input-wrap"><DecimalInput commitOnBlur value={record.restingCalories} onValueChange={value=>{const manual=value!=null&&value>=500&&value<=5000,resting=manual?value:estimatedResting();onUpdate({restingCalories:resting,restingMode:manual?'manual':'auto',dailyCalories:estimateDailyActivityCalories(resting,record.activityLevel??'sedentary')})}} placeholder="自动估算"/><small>kcal</small></span></label></div></section>
 
