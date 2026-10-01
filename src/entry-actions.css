@@ -1,4 +1,9 @@
 .entry-form .primary-button { margin-top: 0; }
+.calorie-calculator { display: flex; min-height: 40px; align-items: center; justify-content: space-between; gap: 10px; padding: 0 3px; }
+.calorie-operators { display: grid; grid-template-columns: repeat(4,40px); gap: 6px; }
+.calorie-operators button { width: 40px; min-height: 40px; border: 1px solid var(--line); border-radius: 12px; background: var(--card-2); color: var(--text); font-size: 16px; font-weight: 650; }
+.calorie-calculator output { min-width: 0; color: var(--muted); font-size: 10px; text-align: right; white-space: nowrap; }
+.calorie-calculator output.ready { color: var(--accent); font-size: 12px; font-weight: 750; }
 .entry-form-actions { position: sticky; z-index: 2; bottom: -2px; display: grid; grid-template-columns: 1.35fr 1fr; gap: 8px; margin: 0 -2px -2px; padding: 10px 2px 2px; background: linear-gradient(to bottom,transparent 0,var(--card) 24px); }
 .entry-form-actions:has(> button:only-child) { grid-template-columns: 1fr; }
 .body-editor-actions { position: sticky; z-index: 2; bottom: -2px; margin: 0 -2px -2px; padding: 10px 2px 2px; background: linear-gradient(to bottom,transparent 0,var(--card) 24px); }

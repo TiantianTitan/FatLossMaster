@@ -2,7 +2,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { ActivityEntry, FoodEntry } from '../../types/record'
 import { Modal } from '../ui/Modal'
-import { parseDecimal } from '../../lib/numbers'
+import { parseArithmeticExpression, parseDecimal } from '../../lib/numbers'
 import { removeEntryById, restoreEntryAt } from '../../lib/entries'
 import { UndoToast } from '../ui/UndoToast'
 
@@ -54,9 +54,12 @@ export function EntryEditor({ kind, entry, recentEntries=[], onSave, onSaveAndCo
   const [calories, setCalories] = useState(entry?.calories?.toString() ?? '')
   const [protein, setProtein] = useState(entry && 'proteinGrams' in entry ? entry.proteinGrams?.toString() ?? '' : '')
   const [error,setError]=useState(''),[saving,setSaving]=useState(false)
+  const calorieInputRef=useRef<HTMLInputElement>(null)
   const isFood = kind === 'food'
+  const calculatedCalories=parseArithmeticExpression(calories)
+  const hasOperator=/[+\-*/×÷]/.test(calories)
   const validationError = () => {
-    const value=parseDecimal(calories)
+    const value=parseArithmeticExpression(calories)
     if(!value||value>(isFood?20000:10000))return '请输入有效的热量'
     if(isFood&&protein.trim()!==''){
       const proteinValue=parseDecimal(protein)
@@ -65,17 +68,19 @@ export function EntryEditor({ kind, entry, recentEntries=[], onSave, onSaveAndCo
     return ''
   }
   const buildEntry = () => {
-    const value = parseDecimal(calories),proteinValue=protein.trim()===''?undefined:parseDecimal(protein); if (!value) return
+    const value = parseArithmeticExpression(calories),proteinValue=protein.trim()===''?undefined:parseDecimal(protein); if (!value) return
     const base = { id: entry?.id ?? crypto.randomUUID(), name: name.trim() || (isFood ? '快速记录' : '运动记录'), calories: value }
     return isFood ? { ...base, proteinGrams: proteinValue } : base
   }
   const persist=async(action:(next:Entry)=>boolean|void|Promise<boolean|void>,next:Entry)=>{setSaving(true);setError('');try{const saved=await action(next);if(saved===false)setError('保存失败，请重试')}catch{setError('保存失败，请重试')}finally{setSaving(false)}}
   const run=async(action:(next:Entry)=>boolean|void|Promise<boolean|void>)=>{const issue=validationError();if(issue){setError(issue);return}const next=buildEntry();if(next)await persist(action,next)}
+  const insertOperator=(operator:string)=>{const input=calorieInputRef.current,start=input?.selectionStart??calories.length,end=input?.selectionEnd??start;setCalories(`${calories.slice(0,start)}${operator}${calories.slice(end)}`);setError('');requestAnimationFrame(()=>{input?.focus();input?.setSelectionRange(start+operator.length,start+operator.length)})}
   const submit = async(event: React.FormEvent) => { event.preventDefault();await run(onSave) }
   return <Modal title={entry ? `修改${isFood ? '膳食' : '运动'}` : `添加${isFood ? '膳食' : '运动'}`} onClose={onClose}><form className="entry-form" onSubmit={submit}>
     {!entry&&recentEntries.length>0&&<div className="recent-entry-presets"><span>最近使用</span><div>{recentEntries.map(item=><button type="button" key={`${item.name}-${item.calories}`} onClick={()=>{setName(item.name);setCalories(item.calories.toString());setProtein('proteinGrams' in item&&item.proteinGrams!=null?item.proteinGrams.toString():'');setError('')}}><strong>{item.name}</strong><small>{item.calories.toLocaleString()} kcal{'proteinGrams' in item&&item.proteinGrams!=null?` · ${item.proteinGrams.toLocaleString()} g`:''}</small></button>)}</div></div>}
     <label><span>名称 <small>可选</small></span><input placeholder={isFood ? '例如：鸡胸肉午餐' : '例如：力量训练'} value={name} onChange={e => setName(e.target.value)}/></label>
-    <label><span>{isFood ? '膳食热量' : '运动消耗'}</span><span className="unit-input"><input autoFocus inputMode="decimal" type="text" autoComplete="off" placeholder={isFood?'例如 650':'例如 300'} value={calories} onChange={e => {setCalories(e.target.value);setError('')}}/><small>kcal</small></span></label>
+    <label><span>{isFood ? '膳食热量' : '运动消耗'}</span><span className="unit-input"><input ref={calorieInputRef} autoFocus inputMode="decimal" type="text" autoComplete="off" spellCheck={false} aria-describedby="calorie-calculator-result" placeholder={isFood?'如 450×80÷100':'如 300+120'} value={calories} onChange={e => {setCalories(e.target.value);setError('')}}/><small>kcal</small></span></label>
+    <div className="calorie-calculator"><div className="calorie-operators" aria-label="热量运算符">{[['+','＋'],['-','−'],['×','×'],['÷','÷']].map(([operator,label])=><button type="button" key={operator} aria-label={`输入${label}`} onPointerDown={event=>event.preventDefault()} onClick={()=>insertOperator(operator)}>{label}</button>)}</div><output id="calorie-calculator-result" className={hasOperator&&calculatedCalories!=null?'ready':''} aria-live="polite">{hasOperator&&calculatedCalories!=null?`= ${calculatedCalories.toLocaleString()} kcal`:'可直接计算'}</output></div>
     {isFood && <label><span>蛋白质</span><span className="unit-input"><input inputMode="decimal" type="text" autoComplete="off" placeholder="例如 35" value={protein} onChange={e => setProtein(e.target.value)}/><small>g</small></span></label>}
     {error&&<p className="form-error" role="alert">{error}</p>}<div className="entry-form-actions">{onSaveAndContinue && <button className="secondary-button" type="button" disabled={saving} onClick={()=>run(onSaveAndContinue)}>保存并继续添加</button>}<button className="primary-button" type="submit" disabled={saving}>{saving?'保存中…':entry?'保存修改':'完成'}</button></div>
   </form></Modal>
