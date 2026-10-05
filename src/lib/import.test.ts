@@ -45,6 +45,11 @@ describe('data import',()=>{
   it('preserves an explicitly empty version 4 preference set',()=>{
     expect(parseBackupPackage(JSON.stringify(buildBackupPayload([record],{}))).preferences).toEqual({})
   })
+  it('round-trips exercise categories and rejects unknown values',()=>{
+    const categorized:DailyRecord={...record,activityEntries:[{id:'run',name:'跑步',calories:300,trainingType:'aerobic'},{id:'lift',name:'力量训练',calories:200,trainingType:'anaerobic'}]}
+    expect(parseBackup(JSON.stringify(buildBackupPayload([categorized])))[0].activityEntries).toEqual(categorized.activityEntries)
+    expect(()=>parseBackup(JSON.stringify({version:4,records:[{...record,activityEntries:[{id:'x',name:'未知',calories:100,trainingType:'cardio'}]}]}))).toThrow('运动单项格式无效')
+  })
 
   it('rejects duplicate record and entry identifiers before replacement can lose data',()=>{
     expect(()=>parseBackup(JSON.stringify({version:4,records:[record,{...record,date:'2026-09-25'}]}))).toThrow('记录 ID')

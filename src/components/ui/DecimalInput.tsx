@@ -1,13 +1,20 @@
-import { useEffect, useRef } from 'react'
-import { parseDecimal } from '../../lib/numbers'
+import { useEffect, useRef, useState } from 'react'
+import { parseArithmeticExpression } from '../../lib/numbers'
+import { ExpressionInput } from './ExpressionInput'
 
-export function DecimalInput({ value, onValueChange, placeholder, required=false, className, commitOnBlur=false }: { value?: number; onValueChange: (value?: number) => void; placeholder?: string; required?: boolean; className?: string; commitOnBlur?: boolean }) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  useEffect(() => {
-    if (inputRef.current && document.activeElement !== inputRef.current) inputRef.current.value = value == null ? '' : String(value)
-  }, [value])
-  return <input ref={inputRef} className={className} type="text" inputMode="decimal" autoComplete="off" required={required} placeholder={placeholder} defaultValue={value ?? ''} onChange={event => {
-    const raw = event.target.value
-    if (!commitOnBlur) { if (raw === '') onValueChange(undefined); else if (!/[.,]$/.test(raw)) { const parsed = parseDecimal(raw); if (parsed != null) onValueChange(parsed) } }
-  }} onBlur={event => { const parsed=parseDecimal(event.target.value); event.target.value=parsed == null ? '' : String(parsed); onValueChange(parsed) }}/>
+export function DecimalInput({ value, onValueChange, label, placeholder, required=false, unit='', commitOnBlur=false }: { value?: number; onValueChange: (value?: number) => void; label: string; placeholder?: string; required?: boolean; unit?: string; commitOnBlur?: boolean }) {
+  const [raw,setRaw]=useState(value == null ? '' : String(value))
+  const focusedRef=useRef(false)
+  useEffect(()=>{if(!focusedRef.current)setRaw(value == null ? '' : String(value))},[value])
+  const change=(next:string)=>{
+    setRaw(next)
+    if(!commitOnBlur)onValueChange(next.trim()===''?undefined:parseArithmeticExpression(next))
+  }
+  const commit=()=>{
+    focusedRef.current=false
+    const result=parseArithmeticExpression(raw)
+    if(raw.trim()===''){onValueChange(undefined);return}
+    if(result!=null){setRaw(String(result));onValueChange(result)}
+  }
+  return <ExpressionInput raw={raw} onRawChange={change} onFocus={()=>{focusedRef.current=true}} onBlur={commit} unit={unit} label={label} placeholder={placeholder} required={required}/>
 }

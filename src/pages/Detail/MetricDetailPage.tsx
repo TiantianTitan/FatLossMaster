@@ -3,9 +3,10 @@ import type { LucideIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import type { BodyProfile, DailyRecord, DetailMetric, RecordSection } from '../../types/record'
 import { activityLevels, calculateBMI, calculateCalorieDeficit, getDailyActivityCalories, getExerciseCalories, getFoodCalories, getProteinGrams } from '../../lib/calculations'
-import { activityEntriesFor, foodEntriesFor } from '../../lib/entries'
+import { activityEntriesFor, foodEntriesFor, trainingBreakdown } from '../../lib/entries'
 import { relativeDateTitle, todayKey } from '../../lib/date'
 import { BodyEditor } from '../../components/forms/BodyEditor'
+import { TrainingCalendar } from './TrainingCalendar'
 
 type DetailMeta = { title:string; eyebrow:string; unit:string; icon:LucideIcon; section:RecordSection }
 
@@ -52,6 +53,7 @@ export function MetricDetailPage({metric,record,records,bodyDefaults,proteinTarg
   const chartItems=[...history].reverse()
   const hasTrend=chartItems.length>=2
   const foodEntries=foodEntriesFor(record),activityEntries=activityEntriesFor(record)
+  const training=trainingBreakdown(record)
   const protein=getProteinGrams(record),proteinPercent=proteinTargetGrams&&protein!=null?Math.round(protein/proteinTargetGrams*100):undefined
   const activityName=activityLevels.find(level=>level.id===(record.activityLevel??'sedentary'))?.name??'静坐办公'
   const facts = metric==='deficit' ? [
@@ -61,7 +63,7 @@ export function MetricDetailPage({metric,record,records,bodyDefaults,proteinTarg
   ] : metric==='weight' ? [
     ['身高',bodyDefaults.heightCm,'cm'],['BMI',calculateBMI(bodyDefaults.weightKg,bodyDefaults.heightCm), ''],['腰围',bodyDefaults.waistCm,'cm'],
   ] : metric==='exercise' ? [
-    ['运动记录',activityEntries.length,'项'],
+    ['有氧',training.aerobic,'kcal'],['无氧',training.anaerobic,'kcal'],['运动记录',activityEntries.length,'项'],...(training.unclassified>0?[['未分类',training.unclassified,'kcal']]:[]),
   ] : metric==='steps' ? [
     ['热量计算','不计入',''],
   ] : metric==='daily' ? [
@@ -71,6 +73,7 @@ export function MetricDetailPage({metric,record,records,bodyDefaults,proteinTarg
   return <main className="page metric-detail-page">
     <header className="detail-nav"><button type="button" onClick={onBack} aria-label="返回首页"><ArrowLeft size={22}/></button><span>今日详情</span><i/></header>
     <section className={`detail-hero detail-${metric}`}><div className="detail-hero-icon"><Icon size={22}/></div><p>{heroLabel}</p><strong>{current==null?'—':metric==='deficit'?numberText(Math.abs(current)):numberText(current)} <small>{current!=null&&meta.unit}</small></strong><h1>{meta.title}</h1></section>
+    {metric==='exercise'&&<TrainingCalendar records={records} todayRecord={record}/>}
     {facts.length>0&&<section className="detail-facts" aria-label="今日数据">{facts.map(([label,value,unit])=><div key={label}><span>{label}</span><strong>{typeof value==='number'?numberText(value):value??'—'} <small>{value!=null&&unit}</small></strong></div>)}</section>}
     <button type="button" className="detail-edit-button" onClick={()=>metric==='weight'?setEditingBody(true):onEdit(meta.section)}><Pencil size={17}/>{metric==='weight'?'编辑身体资料':'编辑今日记录'}</button>
     <section className={`detail-history-card ${hasTrend?'':'compact'}`}><div className="detail-section-head"><div><span>最近 {history.length} 条记录</span><h2>近期变化</h2></div><em>{hasTrend?meta.unit:`${history.length}/2`}</em></div><Sparkline items={chartItems} metric={metric} unit={meta.unit}/></section>

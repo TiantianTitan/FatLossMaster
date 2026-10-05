@@ -9,6 +9,7 @@ export interface ActivityEntry {
   id: string
   name: string
   calories: number
+  trainingType?: 'aerobic' | 'anaerobic'
   includedInSteps?: boolean
 }
 

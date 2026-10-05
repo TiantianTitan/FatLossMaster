@@ -4,6 +4,16 @@ export const foodEntriesFor = (record: DailyRecord): FoodEntry[] => record.foodE
 
 export const activityEntriesFor = (record: DailyRecord): ActivityEntry[] => record.activityEntries ?? (record.exerciseCalories != null ? [{ id: 'legacy-activity', name: '历史运动记录', calories: record.exerciseCalories }] : [])
 
+export const trainingTypeLabel = (type?: ActivityEntry['trainingType']) => type === 'aerobic' ? '有氧' : type === 'anaerobic' ? '无氧' : '未分类'
+
+export const trainingBreakdown = (record?: DailyRecord) => {
+  const entries = record ? activityEntriesFor(record) : []
+  return entries.reduce((totals, entry) => {
+    totals[entry.trainingType ?? 'unclassified'] += entry.calories
+    return totals
+  }, { aerobic: 0, anaerobic: 0, unclassified: 0 })
+}
+
 export const foodEntryPatch = (entries: FoodEntry[]): Partial<DailyRecord> => ({
   foodEntries: entries,
   foodCalories: entries.reduce((sum, item) => sum + item.calories, 0),

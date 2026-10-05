@@ -14,7 +14,7 @@ export const parseArithmeticExpression = (raw: string) => {
     .replace(/＋/g, '+')
     .replace(/[−–—]/g, '-')
     .replace(/\s/g, '')
-  if (!source || !/^[\d.+\-*/()]+$/.test(source)) return undefined
+  if (!source || source.length>120 || !/^[\d.+\-*/()]+$/.test(source)) return undefined
 
   let index = 0
   const factor = (): number | undefined => {

@@ -48,9 +48,47 @@
 .detail-list-row strong { font: 700 18px/1 Iowan Old Style,serif; }
 .detail-list-row strong small { color: var(--muted); font: 500 9px/1 "Avenir Next",sans-serif; }
 .detail-list-empty { padding: 34px 0 27px; text-align: center; color: var(--muted); font-size: 11px; }
+.detail-exercise { min-height: 214px; }
+.detail-exercise p { margin-top: 16px; }
+.training-calendar { margin-top: 13px; padding: 18px 16px 15px; border: 1px solid var(--line); border-radius: 26px; background: var(--card); }
+.training-calendar-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+.training-calendar-head > div:first-child > span { color: var(--muted); font-size: 10px; }
+.training-calendar-head h2 { margin: 3px 0 0; font: 700 20px/1.2 Iowan Old Style,"Songti SC",serif; }
+.training-week-controls { display: flex; align-items: center; gap: 1px; }
+.training-week-controls button { width: 34px; height: 34px; border: 0; border-radius: 11px; background: var(--card-2); color: var(--text); display: grid; place-items: center; }
+.training-week-controls button:disabled { opacity: .35; }
+.training-week-controls strong { min-width: 92px; color: var(--muted); font-size: 10px; font-weight: 600; text-align: center; white-space: nowrap; }
+.training-legend { display: flex; gap: 12px; margin: 13px 1px 9px; }
+.training-legend span { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 10px; }
+.training-legend span::before,.training-selected-list i { width: 7px; height: 7px; border-radius: 50%; background: #58a8a1; content: ""; }
+.training-legend .anaerobic::before,.training-selected-list i.anaerobic { background: var(--accent); }
+.training-legend .unclassified::before,.training-selected-list i.unclassified { background: #a5a29a; }
+.training-week { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 3px; }
+.training-week > button { min-width: 0; min-height: 71px; padding: 7px 0 5px; border: 1px solid transparent; border-radius: 14px; background: var(--card-2); color: var(--text); display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.training-week > button.selected { border-color: var(--accent); background: color-mix(in srgb,var(--accent) 10%,var(--card)); }
+.training-week > button > span:first-child { color: var(--muted); font-size: 10px; }
+.training-week > button strong { font: 700 17px/1 Iowan Old Style,serif; }
+.training-day-marks { min-height: 5px; display: flex; gap: 3px; align-items: center; }
+.training-day-marks i { width: 5px; height: 5px; border-radius: 50%; background: #58a8a1; }
+.training-day-marks i.anaerobic { background: var(--accent); }
+.training-day-marks i.unclassified { background: #a5a29a; }
+.training-selected { margin-top: 12px; padding: 12px 13px 2px; border-top: 1px solid var(--line); }
+.training-selected-head { display: flex; align-items: center; justify-content: space-between; }
+.training-selected-head strong { font-size: 12px; }
+.training-selected-head > span { color: var(--muted); font-size: 10px; }
+.training-selected > p { margin: 10px 0; color: var(--muted); font-size: 11px; }
+.training-selected-list { margin-top: 5px; }
+.training-selected-list > div { min-height: 38px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); }
+.training-selected-list > div:first-child { border-top: 0; }
+.training-selected-list span { display: flex; min-width: 0; align-items: center; gap: 5px; font-size: 11px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.training-selected-list i { flex: 0 0 7px; }
+.training-selected-list small { color: var(--muted); font-size: 9px; font-weight: 500; }
+.training-selected-list strong { flex: 0 0 auto; font-size: 12px; }
 @media(max-width:370px) {
   .detail-hero { min-height: 230px; padding: 24px 22px; }
   .detail-hero > strong { font-size: 46px; }
   .detail-facts > div { padding: 13px; }
+  .training-calendar { padding-inline: 12px; }
+  .training-week-controls strong { min-width: 82px; font-size: 9px; }
 }
 .detail-section-head span { font-size: 10px; }

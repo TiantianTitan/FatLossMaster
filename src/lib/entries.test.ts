@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { DailyRecord } from '../types/record'
-import { activityEntriesFor, activityEntryPatch, foodEntriesFor, foodEntryPatch, recentActivityEntriesFor, recentFoodEntriesFor, removeEntryById, restoreEntryAt } from './entries'
+import { activityEntriesFor, activityEntryPatch, foodEntriesFor, foodEntryPatch, recentActivityEntriesFor, recentFoodEntriesFor, removeEntryById, restoreEntryAt, trainingBreakdown } from './entries'
 
 const legacy: DailyRecord = { id: '1', date: '2026-09-23', foodCalories: 2100, proteinGrams: 150, exerciseCalories: 350, createdAt: 'now', updatedAt: 'now' }
 
@@ -12,6 +12,10 @@ describe('entry migration and totals', () => {
   it('keeps compatibility totals in sync with item lists', () => {
     expect(foodEntryPatch([{ id: 'a', name: '午餐', calories: 800.5, proteinGrams: 50.25 }, { id: 'b', name: '加餐', calories: 200.25, proteinGrams: 10.5 }])).toMatchObject({ foodCalories: 1000.75, proteinGrams: 60.75 })
     expect(activityEntryPatch([{ id: 'a', name: '力量训练', calories: 300.5 }])).toMatchObject({ exerciseCalories: 300.5 })
+  })
+  it('keeps aerobic, anaerobic and older unclassified exercise distinct', () => {
+    expect(trainingBreakdown({...legacy,activityEntries:[{id:'a',name:'跑步',calories:180,trainingType:'aerobic'},{id:'b',name:'力量',calories:220,trainingType:'anaerobic'},{id:'c',name:'旧记录',calories:90}]})).toEqual({aerobic:180,anaerobic:220,unclassified:90})
+    expect(trainingBreakdown(legacy)).toEqual({aerobic:0,anaerobic:0,unclassified:350})
   })
   it('returns the latest named entries without duplicate names or legacy totals', () => {
     const records:DailyRecord[]=[
