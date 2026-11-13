@@ -45,18 +45,18 @@ export function ExpressionInput({ raw, onRawChange, unit, label, placeholder, re
     onRawChange(`${raw.slice(0, start)}${operator}${raw.slice(end)}`)
   }
   const pressOperator = (event: PointerEvent<HTMLButtonElement>, operator: string) => {
-    event.preventDefault()
     insertedOnPointerDown.current = event.pointerType !== 'mouse'
     if (insertedOnPointerDown.current) insertOperator(operator)
   }
   const clickOperator = (event: MouseEvent<HTMLButtonElement>, operator: string) => {
     // Touch can also dispatch click after pointerdown; do not insert twice.
     if (!insertedOnPointerDown.current || event.detail === 0) insertOperator(operator)
+    else inputRef.current?.focus({ preventScroll: true })
     insertedOnPointerDown.current = false
   }
 
   return <span className={`expression-field${invalid?' invalid':''}`}>
     <span className="expression-main"><input ref={inputRef} type="text" inputMode="decimal" autoComplete="off" spellCheck={false} autoFocus={autoFocus} required={required} aria-label={label} aria-invalid={invalid} aria-describedby={resultId} placeholder={placeholder} value={raw} onFocus={onFocus} onChange={event=>onRawChange(event.target.value)} onBlur={onBlur}/><small>{unit}</small></span>
-    <span className="expression-tools"><span className="expression-operators" aria-label="运算符">{operators.map(({value,label:operatorLabel})=><button type="button" key={value} aria-label={`输入${operatorLabel}`} onPointerDown={event=>pressOperator(event,value)} onClick={event=>clickOperator(event,value)}>{operatorLabel}</button>)}</span><output id={resultId} aria-live="polite">{hasExpression ? result==null?'算式未完成':`= ${result.toLocaleString()} ${unit}` : ''}</output></span>
+    <span className="expression-tools"><span className="expression-operators" aria-label="运算符">{operators.map(({value,label:operatorLabel})=><button type="button" key={value} aria-label={`输入${operatorLabel}`} onPointerDown={event=>pressOperator(event,value)} onMouseDown={event=>event.preventDefault()} onClick={event=>clickOperator(event,value)} onPointerCancel={()=>{insertedOnPointerDown.current=false}}>{operatorLabel}</button>)}</span><output id={resultId} aria-live="polite">{hasExpression ? result==null?'算式未完成':`= ${result.toLocaleString()} ${unit}` : ''}</output></span>
   </span>
 }
