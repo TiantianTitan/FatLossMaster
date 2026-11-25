@@ -1,18 +1,26 @@
-import { RotateCcw } from 'lucide-react'
-import type { ActivityEntry, BodyProfile, DailyRecord, FoodEntry } from '../../types/record'
+import { Armchair, Footprints, Package, PersonStanding, RotateCcw } from 'lucide-react'
+import type { ActivityEntry, ActivityLevel, BodyProfile, DailyRecord, FoodEntry } from '../../types/record'
 import { activityEntryPatch, activityEntriesFor, foodEntriesFor, foodEntryPatch, recentActivityEntriesFor, recentFoodEntriesFor } from '../../lib/entries'
 import { activityLevels, calculateCalorieDeficit, calculateTotalCalories, estimateDailyActivityCalories, estimateRestingCalories, getDailyActivityCalories, getExerciseCalories, getFoodCalories, getProteinGrams } from '../../lib/calculations'
 import { EntrySection } from './EntrySection'
 import { DecimalInput } from '../ui/DecimalInput'
 import { DraftTextarea } from '../ui/DraftTextarea'
-import { DEFAULT_RESTING_CALORIES } from '../../lib/recordDefaults'
+import { DEFAULT_ACTIVITY_LEVEL, DEFAULT_RESTING_CALORIES } from '../../lib/recordDefaults'
+
+const activityLevelIcons = {
+  sedentary: Armchair,
+  standing: PersonStanding,
+  walking: Footprints,
+  physical: Package,
+}
 
 export function RecordForm({ record, records, bodyProfile, proteinTargetGrams, onUpdate }: { record: DailyRecord; records:DailyRecord[]; bodyProfile:BodyProfile; proteinTargetGrams?:number; onUpdate: (patch: Partial<DailyRecord>, options?:{silent?:boolean}) => Promise<boolean> }) {
   const total = calculateTotalCalories(record), deficit = calculateCalorieDeficit(record)
   const adjustedDaily = getDailyActivityCalories(record)
   const foodEntries = foodEntriesFor(record), activityEntries = activityEntriesFor(record)
   const protein=getProteinGrams(record),proteinPercent=proteinTargetGrams&&protein!=null?Math.round(protein/proteinTargetGrams*100):undefined
-  const setActivityLevel = (level: DailyRecord['activityLevel']) => onUpdate({ activityLevel: level, dailyCalories: estimateDailyActivityCalories(record.restingCalories, level) })
+  const activityLevel = record.activityLevel ?? DEFAULT_ACTIVITY_LEVEL
+  const setActivityLevel = (level: ActivityLevel) => onUpdate({ activityLevel: level, dailyCalories: estimateDailyActivityCalories(record.restingCalories, level) })
   const estimatedResting=()=>estimateRestingCalories(bodyProfile.weightKg,bodyProfile.heightCm,bodyProfile.ageYears,bodyProfile.sex)??DEFAULT_RESTING_CALORIES
   const resetResting = () => { const resting = estimatedResting(); onUpdate({ restingMode: 'auto', restingCalories: resting, dailyCalories: estimateDailyActivityCalories(resting, record.activityLevel ?? 'sedentary') }) }
   return <div className="form-stack">
@@ -25,7 +33,25 @@ export function RecordForm({ record, records, bodyProfile, proteinTargetGrams, o
 
     <section id="record-resting" className="form-section"><div className="form-title-row"><h2>静息消耗</h2><button type="button" onClick={resetResting}><RotateCcw size={14}/>恢复估算</button></div><div className="input-card"><label className="input-row"><span>全天静卧消耗</span><DecimalInput commitOnBlur value={record.restingCalories} onValueChange={value=>{const manual=value!=null&&value>=500&&value<=5000,resting=manual?value:estimatedResting();onUpdate({restingCalories:resting,restingMode:manual?'manual':'auto',dailyCalories:estimateDailyActivityCalories(resting,record.activityLevel??'sedentary')})}} placeholder="自动估算" unit="kcal" label="全天静卧消耗"/></label></div></section>
 
-    <section id="record-daily" className="form-section"><h2>日常消耗</h2><div className="activity-levels">{activityLevels.map(level => <button key={level.id} aria-pressed={record.activityLevel===level.id} className={record.activityLevel===level.id?'active':''} onClick={() => setActivityLevel(level.id)}><span><strong>{level.name}</strong><small>{level.description}</small></span><em>+{estimateDailyActivityCalories(record.restingCalories,level.id)?.toLocaleString() ?? '—'} kcal</em></button>)}</div><div className="input-card steps-card"><label className="input-row"><span>今日步数 <small>可选</small></span><DecimalInput commitOnBlur value={record.stepCount} onValueChange={stepCount=>onUpdate({stepCount:stepCount == null ? undefined : Math.min(200000,Math.max(0,stepCount))})} placeholder="未记录" unit="步" label="今日步数"/></label></div><div className="inline-result"><span>今日日常消耗</span><strong>+{adjustedDaily?.toLocaleString() ?? '—'} kcal</strong></div></section>
+    <section id="record-daily" className="form-section">
+      <h2 id="activity-levels-title">日常消耗</h2>
+      <div className="activity-levels" role="group" aria-labelledby="activity-levels-title">
+        {activityLevels.map(({ id, name }) => {
+          const Icon = activityLevelIcons[id]
+          return <button key={id} type="button" aria-pressed={activityLevel === id} onClick={() => setActivityLevel(id)}>
+            <Icon size={18} aria-hidden="true"/>
+            <span>{name}</span>
+          </button>
+        })}
+      </div>
+    </section>
+
+    <div id="record-steps" className="input-card steps-card record-anchor">
+      <label className="input-row">
+        <span>步数 <small>可选</small></span>
+        <DecimalInput commitOnBlur value={record.stepCount} onValueChange={stepCount => onUpdate({ stepCount: stepCount == null ? undefined : Math.min(200000, Math.max(0, stepCount)) })} placeholder="未记录" unit="步" label="步数"/>
+      </label>
+    </div>
 
     <section id="record-sleep" className="form-section"><h2>睡眠时间</h2><div className="input-card"><label className="input-row"><span>昨晚睡眠</span><DecimalInput commitOnBlur value={record.sleepHours} onValueChange={sleepHours=>onUpdate({sleepHours:sleepHours == null ? undefined : Math.min(sleepHours,24)})} placeholder="例如 7,5" unit="h" label="昨晚睡眠"/></label></div></section>
 

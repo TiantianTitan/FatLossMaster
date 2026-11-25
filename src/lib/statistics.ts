@@ -1,49 +1,74 @@
-import { differenceInCalendarDays, endOfDay, format, isWithinInterval, parseISO, startOfDay, startOfMonth, subDays } from 'date-fns'
+import { differenceInCalendarDays, format, parseISO, subDays } from 'date-fns'
 import type { DailyRecord } from '../types/record'
 import { calculateCalorieDeficit, getExerciseCalories, getFoodCalories, getProteinGrams } from './calculations'
+import { trainingBreakdown } from './entries'
 
-const mean = (values: Array<number | undefined>) => {
-  const valid = values.filter((value): value is number => value != null)
-  return valid.length ? valid.reduce((sum, value) => sum + value, 0) / valid.length : undefined
+const summarize = (values: Array<number | undefined>) => {
+  const recorded = values.filter(value => value != null)
+  if (recorded.length === 0) return { total: undefined, average: undefined }
+  const total = recorded.reduce((sum, value) => sum + value, 0)
+  return { total, average: total / recorded.length }
 }
+
+export type TrendRange = 7 | 30 | 90 | 'all'
 
 export interface PeriodStats {
   averageWeight?: number
   weightChange?: number
-  averageWaist?: number
   averageIntake?: number
   averageDeficit?: number
+  totalDeficit?: number
   averageExercise?: number
+  totalExercise?: number
+  totalAerobic?: number
+  totalAnaerobic?: number
   averageProtein?: number
-  averageSleep?: number
-  averageSteps?: number
-  startWeight?: number
-  currentWeight?: number
   recordedDays: number
   totalDays: number
 }
 
-const periodStats = (records: DailyRecord[], start: Date, end: Date): PeriodStats => {
-  if (end < start) return { recordedDays: 0, totalDays: 0 }
-  const filtered = records.filter(r => isWithinInterval(parseISO(r.date), { start, end })).sort((a, b) => a.date.localeCompare(b.date))
-  const weights = filtered.filter(r => r.weightKg != null)
-  const startWeight = weights[0]?.weightKg
-  const currentWeight = weights.at(-1)?.weightKg
-  return {
-    averageWeight: mean(filtered.map(r => r.weightKg)), weightChange: startWeight != null && currentWeight != null ? currentWeight - startWeight : undefined,
-    averageWaist: mean(filtered.map(r => r.waistCm)), averageIntake: mean(filtered.map(getFoodCalories)),
-    averageDeficit: mean(filtered.map(calculateCalorieDeficit)), averageExercise: mean(filtered.map(r => getExerciseCalories(r) ?? 0)), averageProtein: mean(filtered.map(getProteinGrams)), averageSleep: mean(filtered.map(r => r.sleepHours)), averageSteps: mean(filtered.map(r => r.stepCount)),
-    startWeight, currentWeight, recordedDays: filtered.length, totalDays: differenceInCalendarDays(end, start) + 1
+export function calculateTrendPeriod(records: DailyRecord[], range: TrendRange, referenceDate: Date) {
+  // Today is the exclusive end of the selected period. Its start is the exclusive end of the previous period.
+  const end = format(referenceDate, 'yyyy-MM-dd')
+  const period = range === 'all' ? undefined : {
+    days: range,
+    start: format(subDays(referenceDate, range), 'yyyy-MM-dd'),
+    previousStart: format(subDays(referenceDate, range * 2), 'yyyy-MM-dd'),
   }
-}
+  const selected = records
+    .filter(record => record.date < end && (!period || record.date >= period.start))
+    .sort((a, b) => a.date.localeCompare(b.date))
+  const weights = selected.map(record => record.weightKg).filter(weight => weight != null)
+  const averageWeight = summarize(weights).average
 
-const lastCompletedDay = (date: Date) => endOfDay(subDays(startOfDay(date), 1))
+  let weightChange: number | undefined
+  if (period) {
+    const previousAverage = summarize(records
+      .filter(record => record.date >= period.previousStart && record.date < period.start)
+      .map(record => record.weightKg)).average
+    if (averageWeight != null && previousAverage != null) weightChange = averageWeight - previousAverage
+  } else if (weights.length > 1) {
+    weightChange = weights[weights.length - 1] - weights[0]
+  }
 
-export const calculateLastSevenDaysStats = (records: DailyRecord[], date = new Date()) => periodStats(records, startOfDay(subDays(date,7)), lastCompletedDay(date))
-export const calculateMonthlyStats = (records: DailyRecord[], date = new Date()) => periodStats(records, startOfMonth(date), lastCompletedDay(date))
+  const firstDate = selected[0]?.date
+  const deficit = summarize(selected.map(calculateCalorieDeficit))
+  const exercise = summarize(selected.map(record => getExerciseCalories(record) ?? 0))
+  const training = selected.map(record => trainingBreakdown(record))
+  const stats: PeriodStats = {
+    averageWeight,
+    weightChange,
+    averageIntake: summarize(selected.map(getFoodCalories)).average,
+    averageDeficit: deficit.average,
+    totalDeficit: deficit.total,
+    averageExercise: exercise.average,
+    totalExercise: exercise.total,
+    totalAerobic: summarize(training.map(day => day.aerobic)).total,
+    totalAnaerobic: summarize(training.map(day => day.anaerobic)).total,
+    averageProtein: summarize(selected.map(getProteinGrams)).average,
+    recordedDays: selected.length,
+    totalDays: period?.days ?? (firstDate ? differenceInCalendarDays(referenceDate, parseISO(firstDate)) : 0),
+  }
 
-export const recordsInDayRange = (records: DailyRecord[], days: number, date = new Date()) => {
-  const end = format(startOfDay(date), 'yyyy-MM-dd')
-  const start = format(subDays(startOfDay(date), days - 1), 'yyyy-MM-dd')
-  return records.filter(record => record.date >= start && record.date <= end)
+  return { records: selected, stats }
 }

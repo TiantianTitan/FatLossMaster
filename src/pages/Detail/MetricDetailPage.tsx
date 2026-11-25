@@ -16,7 +16,7 @@ const detailMeta:Record<DetailMetric,DetailMeta> = {
   weight:{ title:'体重', eyebrow:'身体数据', unit:'kg', icon:Ruler, section:'summary' },
   exercise:{ title:'运动', eyebrow:'额外消耗', unit:'kcal', icon:Dumbbell, section:'activity' },
   sleep:{ title:'睡眠', eyebrow:'昨晚记录', unit:'h', icon:Moon, section:'sleep' },
-  steps:{ title:'步数', eyebrow:'今日活动', unit:'步', icon:Footprints, section:'daily' },
+  steps:{ title:'步数', eyebrow:'今日活动', unit:'步', icon:Footprints, section:'steps' },
   daily:{ title:'日常消耗', eyebrow:'活动档位', unit:'kcal', icon:Gauge, section:'daily' },
 }
 
